@@ -136,13 +136,14 @@
 <meta property="og:site_name" content="桂花糖的工坊">
 <meta property="og:description" content="超分辨率技术（Super-Resolution, SR）是指从观测到的低分辨率图像重建出相应的高分辨率图像，在监控设备、卫星图像和医学影像等领域都有重要的应用价值。 本文针对端到端的基于深度学习的单张图像超分辨率方法(Single Image Super-Resolution, SISR)，总结一下从SRCNN到EDSR的发展历程。(排列顺序大致按论文中给出的4倍上采样结果的峰值信噪比(Peak">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://pic4.zhimg.com/v2-48339af4c2ac2ad7f858eecf513dfacd_r.jpg">
-<meta property="og:image" content="https://pic1.zhimg.com/v2-ee451a707399625eee3e194f7a9d6ca0_r.jpg">
-<meta property="og:updated_time" content="2017-12-17T04:39:08.000Z">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/01%20SRCNN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/02%20FSRCNN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/03%20ESPCN.png">
+<meta property="og:updated_time" content="2017-12-17T08:28:37.582Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="从SRCNN到EDSR，总结深度学习端到端超分辨率方法发展历程">
 <meta name="twitter:description" content="超分辨率技术（Super-Resolution, SR）是指从观测到的低分辨率图像重建出相应的高分辨率图像，在监控设备、卫星图像和医学影像等领域都有重要的应用价值。 本文针对端到端的基于深度学习的单张图像超分辨率方法(Single Image Super-Resolution, SISR)，总结一下从SRCNN到EDSR的发展历程。(排列顺序大致按论文中给出的4倍上采样结果的峰值信噪比(Peak">
-<meta name="twitter:image" content="https://pic4.zhimg.com/v2-48339af4c2ac2ad7f858eecf513dfacd_r.jpg">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/01%20SRCNN.png">
 
 
 
@@ -390,7 +391,7 @@
               
                 <span class="post-meta-item-text">更新于&#58;</span>
               
-              <time title="更新于" itemprop="dateModified" datetime="2017-12-17T12:39:08+08:00">
+              <time title="更新于" itemprop="dateModified" datetime="2017-12-17T16:28:37+08:00">
                 2017-12-17
               </time>
             
@@ -451,7 +452,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,054
+                  1,655
                 </span>
               
 
@@ -480,16 +481,24 @@
 <p>本文针对端到端的基于深度学习的单张图像超分辨率方法(Single Image Super-Resolution, SISR)，总结一下从SRCNN到EDSR的发展历程。(排列顺序大致按论文中给出的4倍上采样结果的峰值信噪比(Peak Signal to Noise Ratio, PSNR)从低到高排列)</p>
 <p><strong>1. SRCNN</strong><br>(<a href="http://personal.ie.cuhk.edu.hk/~ccloy/files/eccv_2014_deepresolution.pdf" target="_blank" rel="noopener">Learning a Deep Convolutional Network for Image Super-Resolution</a>, ECCV2014)</p>
 <p>SRCNN是深度学习用在超分辨率重建上的开山之作。SRCNN的网络结构非常简单，仅仅用了三个卷积层，网络结构如下图所示。</p>
-<p><img src="https://pic4.zhimg.com/v2-48339af4c2ac2ad7f858eecf513dfacd_r.jpg" alt="SRCNN"></p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/01%20SRCNN.png" alt="SRCNN"></p>
 <p>SRCNN首先使用双三次(bicubic)插值将低分辨率图像放大成目标尺寸，接着通过三层卷积网络拟合非线性映射，最后输出高分辨率图像结果。本文中，作者将三层卷积的结构解释成三个步骤：<strong>图像块的提取和特征表示，特征非线性映射和最终的重建</strong>。</p>
 <p>三个卷积层使用的卷积核的大小分为为9x9,，1x1和5x5，前两个的输出特征个数分别为64和32。用Timofte数据集（包含91幅图像）和ImageNet大数据集进行训练。使用均方误差(Mean Squared Error, MSE)作为损失函数，有利于获得较高的PSNR。</p>
 <p>code: <a href="http://mmlab.ie.cuhk.edu.hk/projects/SRCNN.html" target="_blank" rel="noopener">http://mmlab.ie.cuhk.edu.hk/projects/SRCNN.html</a></p>
 <p><strong>2. FSRCNN</strong><br>(<a href="https://arxiv.org/abs/1608.00367" target="_blank" rel="noopener">Accelerating the Super-Resolution Convolutional Neural Network</a>, ECCV2016)</p>
 <p>FSRCNN与SRCNN都是香港中文大学Dong Chao， Xiaoou Tang等人的工作。FSRCNN是对之前SRCNN的改进，主要在三个方面：一是在最后使用了一个反卷积层放大尺寸，因此可以直接将原始的低分辨率图像输入到网络中，而不是像之前SRCNN那样需要先通过bicubic方法放大尺寸。二是改变特征维数，使用更小的卷积核和使用更多的映射层。三是可以共享其中的映射层，如果需要训练不同上采样倍率的模型，只需要fine-tuning最后的反卷积层。</p>
 <p>由于FSRCNN不需要在网络外部进行放大图片尺寸的操作，同时通过添加收缩层和扩张层，将一个大层用一些小层来代替，因此FSRCNN与SRCNN相比有较大的速度提升。FSRCNN在训练时也可以只fine-tuning最后的反卷积层，因此训练速度也更快。FSRCNN与SCRNN的结构对比如下图所示。</p>
-<p><img src="https://pic1.zhimg.com/v2-ee451a707399625eee3e194f7a9d6ca0_r.jpg" alt="FSRCNN"></p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/02%20FSRCNN.png" alt="FSRCNN"></p>
 <p>FSRCNN可以分为五个部分。<strong>特征提取</strong>：SRCNN中针对的是插值后的低分辨率图像，选取的核大小为9×9，这里直接是对原始的低分辨率图像进行操作，因此可以选小一点，设置为5×5。<strong>收缩</strong>：通过应用1×1的卷积核进行降维，减少网络的参数，降低计算复杂度。<strong>非线性映射</strong>：感受野大，能够表现的更好。SRCNN中，采用的是5×5的卷积核，但是5×5的卷积核计算量会比较大。用两个串联的3×3的卷积核可以替代一个5×5的卷积核，同时两个串联的小卷积核需要的参数3×3×2=18比一个大卷积核5×5=25的参数要小。FSRCNN网络中通过m个核大小为3×3的卷积层进行串联。<strong>扩张</strong>：作者发现低维度的特征带来的重建效果不是太好，因此应用1×1的卷积核进行扩维，相当于收缩的逆过程。<strong>反卷积层</strong>：可以堪称是卷积层的逆操作，如果步长为n，那么尺寸放大n倍，实现了上采样的操作。</p>
 <p>FSRCNN中激活函数采用PReLU，损失函数仍然是均方误差。对CNN来说，Set91并不足够去训练大的网络结构，FSRCNN提出general-100 + Set91进行充当训练集。并且进行数据增强，1）缩小尺寸为原来的0.9, 0.8, 0.7和0.6。2）旋转 90°，180°和270°，因此获得了数据量的提升。</p>
+<p>code: <a href="http://mmlab.ie.cuhk.edu.hk/projects/FSRCNN.html" target="_blank" rel="noopener">http://mmlab.ie.cuhk.edu.hk/projects/FSRCNN.html</a></p>
+<p><strong>3. ESPCN</strong><br>(<a href="https://arxiv.org/abs/1609.05158" target="_blank" rel="noopener">Real-Time Single Image and Video Super-Resolution Using an Efficient Sub-Pixel Convolutional Neural Network</a>, CVPR2016)</p>
+<p>作者在本文中介绍到，像SRCNN那样的方法，由于需要将低分辨率图像通过上采样插值得到与高分辨率图像相同大小的尺寸，再输入到网络中，这意味着要在较高的分辨率上进行卷积操作，从而增加了计算复杂度。本文提出了一种直接在低分辨率图像尺寸上提取特征，计算得到高分辨率图像的高效方法。ESPCN网络结构如下图所示。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/03%20ESPCN.png" alt="ESPCN"></p>
+<p>ESPCN的核心概念是亚像素卷积层(sub-pixel convolutional layer)。网络的输入是原始低分辨率图像，通过三个卷积层以后，得到通道数为 $r^{2}$ 的与输入图像大小一样的特征图像。再将特征图像每个像素的 $r^{2}$ 个通道重新排列成一个 $r \times r$ 的区域，对应高分辨率图像中一个 $r \times r$ 大小的子块，从而大小为 $H \times W \times {r^2}$ 的特征图像被重新排列成 $rH \times rW \times 1$ 的高分辨率图像。我理解的亚像素卷积层包含两个过程，一个普通的卷积层和后面的排列像素的步骤。就是说，最后一层卷积层输出的特征个数需要设置成固定值，即放大倍数r的平方，这样总的像素个数就与要得到的高分辨率图像一致，将像素进行重新排列就能得到高分辨率图。</p>
+<p>在ESPCN网络中，图像尺寸放大过程的插值函数被隐含地包含在前面的卷积层中，可以自动学习到。由于卷积运算都是在低分辨率图像尺寸大小上进行，因此效率会较高。</p>
+<p>训练时，可以将输入的训练数据标签，预处理成重新排列操作前的格式，比如将21×21的单通道图，预处理成9个通道，7×7的图，这样在训练时，就不需要做重新排列的操作。另外，ESPCN激活函数采用tanh替代了ReLU。损失函数为均方误差。</p>
+<p>github(tensorflow): <a href="https://github.com/drakelevy/ESPCN-TensorFlow" target="_blank" rel="noopener">https://github.com/drakelevy/ESPCN-TensorFlow</a><br>github(pytorch): <a href="https://github.com/leftthomas/ESPCN" target="_blank" rel="noopener">https://github.com/leftthomas/ESPCN</a><br>github(caffe): <a href="https://github.com/wangxuewen99/Super-Resolution/tree/master/ESPCN" target="_blank" rel="noopener">https://github.com/wangxuewen99/Super-Resolution/tree/master/ESPCN</a></p>
 
       
     </div>
@@ -725,7 +734,7 @@
     
       <span class="post-meta-item-text">Site words total count&#58;</span>
     
-    <span title="Site words total count">1.1k</span>
+    <span title="Site words total count">1.7k</span>
   
 </div>
 
