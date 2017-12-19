@@ -142,10 +142,16 @@
 <meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/04%20VDSR.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/05%20DRCN.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/06%20DRCN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/26%20DRCN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/08%20DRCN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/09%20DRCN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/10%20DRCN.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/24%20RED.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/25%20RED.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/11%20DRRN.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/12%20LapSRN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/13%20LapSRN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/14%20LapSRN.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/15%20SRDenseNet.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/16%20SRDenseNet.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/17%20SRGAN.png">
@@ -155,7 +161,7 @@
 <meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/21%20SRGAN.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/22%20EDSR.png">
 <meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/23%20EDSR.png">
-<meta property="og:updated_time" content="2017-12-19T14:42:44.929Z">
+<meta property="og:updated_time" content="2017-12-19T15:31:16.053Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="从SRCNN到EDSR，总结深度学习端到端超分辨率方法发展历程">
 <meta name="twitter:description" content="超分辨率技术（Super-Resolution, SR）是指从观测到的低分辨率图像重建出相应的高分辨率图像，在监控设备、卫星图像和医学影像等领域都有重要的应用价值。 本文针对端到端的基于深度学习的单张图像超分辨率方法(Single Image Super-Resolution, SISR)，总结一下从SRCNN到EDSR的发展历程。(排列顺序大致按论文中给出的4倍上采样结果的峰值信噪比(Peak">
@@ -407,7 +413,7 @@
               
                 <span class="post-meta-item-text">更新于&#58;</span>
               
-              <time title="更新于" itemprop="dateModified" datetime="2017-12-19T22:42:44+08:00">
+              <time title="更新于" itemprop="dateModified" datetime="2017-12-19T23:31:16+08:00">
                 2017-12-19
               </time>
             
@@ -526,8 +532,10 @@
 <p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/05%20DRCN.png" alt="DRCN"></p>
 <p>DRCN输入的是插值后的图像，分为三个模块，第一个是<strong>Embedding network</strong>，相当于特征提取，第二个是<strong>Inference network</strong>, 相当于特征的非线性映射，第三个是<strong>Reconstruction network</strong>,即从特征图像恢复最后的重建结果。其中的Inference network是一个递归网络，即数据循环地通过该层多次。将这个循环进行展开，等效于使用同一组参数的多个串联的卷积层，如下图所示。</p>
 <p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/06%20DRCN.png" alt="DRCN"></p>
-<p>其中的 $H_{1}$ 到 $H_{D}$ 是D个共享参数的卷积层。将这D个卷积层的每一层的结果都通过相同的Reconstruction Net，在Reconstruction Net中与输入的图像相加，得到D个输出重建结果。这些所有的结果在训练时都同时被监督，即所有的递归都被监督，作者称之为递归监督(Recursive-Supervision)，避免了梯度消失/爆炸问题。将D个递归得到的结果再加权平均：</p>
+<p>其中的 $H_{l}$ 到 $H_{D}$ 是D个共享参数的卷积层。将这D个卷积层的每一层的结果都通过相同的Reconstruction Net，在Reconstruction Net中与输入的图像相加，得到D个输出重建结果。这些所有的结果在训练时都同时被监督，即所有的递归都被监督，作者称之为递归监督(Recursive-Supervision)，避免了梯度消失/爆炸问题。将D个递归得到的结果再加权平均：</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/26%20DRCN.png" alt="DRCN"></p>
 <p>得到一个总输出。每个加权 $w_{d}$ 在训练的过程中也不断地更新。最终的目标函数就需要优化每一个递归层输出的误差和总输出的误差：</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/08%20DRCN.png" alt="DRCN"><br><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/09%20DRCN.png" alt="DRCN"><br><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/10%20DRCN.png" alt="DRCN"></p>
 <p>$\beta$ 表示的是权值衰减(weight decay)。$\alpha$ 的初始值设置得比较高以使得训练过程稳定，因为训练开始的阶段递归更容易收敛。随着训练的进行，$\alpha$ 逐渐衰减来提升最终输出的性能。</p>
 <p>code: <a href="https://cv.snu.ac.kr/research/DRCN/" target="_blank" rel="noopener">https://cv.snu.ac.kr/research/DRCN/</a><br>githug(tensorflow): <a href="https://github.com/jiny2001/deeply-recursive-cnn-tf" target="_blank" rel="noopener">https://github.com/jiny2001/deeply-recursive-cnn-tf</a></p>
 <p><strong>6. RED</strong><br>(<a href="https://arxiv.org/abs/1606.08921" target="_blank" rel="noopener">Image Restoration Using Convolutional Auto-encoders with Symmetric Skip Connections</a>, NIPS2016)</p>
@@ -546,7 +554,8 @@
 <p>论文中作者先总结了之前的方法存在有三点问题。一是有的方法在输入图像进网络前，需要使用预先定义好的上采样操作(例如bicubic)来获得目标的空间尺寸，这样的操作增加了额外的计算开销，同时也会导致可见的重建伪影。而有的方法使用了亚像素卷积层或者反卷积层这样的操作来替换预先定义好的上采样操作，这些方法的网络结构又相对比较简单，性能较差，并不能学好低分辨率图像到高分辨率图像复杂的映射。二是在训练网络时使用 $l_{2} $型损失函数时，不可避免地会产生模糊的预测，恢复出的高分辨率图片往往会太过于平滑。三是在重建高分辨率图像时，如果只用一次上采样的操作，在获得大倍数(8倍以上)的上采样因子时就会比较困难。而且在不同的应用时，需要训练不同上采样倍数的模型。针对这三点问题，作者提出了LapSRN，网络结构如下图所示。</p>
 <p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/12%20LapSRN.png" alt="LapSRN"></p>
 <p>LapSRN的结构可以看成有多级，每一级完成一次2倍的上采样操作，要实现8倍的上采样就需要有三级。在每一级中，先通过一些级联的卷积层提取特征，接着通过一个反卷积层将提取出的特征的尺寸上采样2倍。反卷积层后连有两个卷积层，一个卷积层的作用是继续提取特征，另外一个卷积层的作用是预测出这一级的残差。输入图像在每一级也经过一个反卷积层使尺寸上采样2倍，再与对应级的残差相加，就能重构出这一级的上采样结果。LapSRN设计损失函数为：</p>
-<p>其中，  叫作Charbonnier惩罚函数( $l_{1} $范数的变形)， $\varepsilon $大小设置为0.001。x表示低分辨率图像，y表示高分辨率图像，r表示残差，s表示对应的级。N表示训练时batch size的大小，L表示网络一共有多少级。通过将高分辨率图下采样，在每一级都存在有对应的ground truth进行监督，因此每一级都有一个损失，训练的时候就是要把每一级的损失的和降低。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/13%20LapSRN.png" alt="LapSRN"></p>
+<p>其中，<img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/14%20LapSRN.png" alt="LapSRN">叫作Charbonnier惩罚函数( $l_{1} $范数的变形)， $\varepsilon $大小设置为0.001。x表示低分辨率图像，y表示高分辨率图像，r表示残差，s表示对应的级。N表示训练时batch size的大小，L表示网络一共有多少级。通过将高分辨率图下采样，在每一级都存在有对应的ground truth进行监督，因此每一级都有一个损失，训练的时候就是要把每一级的损失的和降低。</p>
 <p>LapSRN通过逐步上采样，一级一级预测残差的方式，在做高倍上采样时，也能得到中间低倍上采样结果的输出。由于尺寸是逐步放大，不是所有的操作都在大尺寸特征上进行，因此速度比较快。LapSRN设计了损失函数来训练网络，对每一级的结果都进行监督，因此取得了不错的结果。</p>
 <p>github(matconvnet): <a href="https://github.com/phoenix104104/LapSRN" target="_blank" rel="noopener">https://github.com/phoenix104104/LapSRN</a><br>github(pytorch): <a href="https://github.com/twtygqyy/pytorch-LapSRN" target="_blank" rel="noopener">https://github.com/twtygqyy/pytorch-LapSRN</a><br>github(tensorflow): <a href="https://github.com/zjuela/LapSRN-tensorflow" target="_blank" rel="noopener">https://github.com/zjuela/LapSRN-tensorflow</a></p>
 <p><strong>9. SRDenseNet</strong><br>(<a href="http://openaccess.thecvf.com/content_ICCV_2017/papers/Tong_Image_Super-Resolution_Using_ICCV_2017_paper.pdf" target="_blank" rel="noopener">Image Super-Resolution Using Dense Skip Connections</a>, ICCV2017)</p>
