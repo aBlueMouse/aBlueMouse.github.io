@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+      
+    
+
+    
+  
+
+  
+    
+    
+    <link href="//fonts.cat.net/css?family=Roboto Slab:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|Lobster Two:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/180.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/16.png?v=5.1.3">
+
+
+
+
+
+
+  <meta name="keywords" content="深度学习(Deep Learning),卷积神经网络(CNN),图像处理(Image Processing),超分辨率(Super-resolution)," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="距离写上一篇总结已经过去了一年了。因为比较懒，再加上今年也要毕业了，面临着实习、找工作、毕业论文等诸多事情，因此在很早就想过写这第二篇总结的计划，也一直拖到了现在才动笔。 这篇总结的内容主要是ICCV2017、CVPR2018以及ECCV2018三大会议中的一部分有关针对自然图像（还有不少针对人脸图像的）的深度学习端到端超分辨率方法的论文。从中大致也能看到两年来用于超分辨率的卷积神经网络的发展形势">
+<meta name="keywords" content="深度学习(Deep Learning),卷积神经网络(CNN),图像处理(Image Processing),超分辨率(Super-resolution)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深度学习端到端超分辨率方法发展历程（二）">
+<meta property="og:url" content="http://yoursite.com/2018/11/20/深度学习端到端超分辨率方法发展历程（二）/index.html">
+<meta property="og:site_name" content="桂花糖的工坊">
+<meta property="og:description" content="距离写上一篇总结已经过去了一年了。因为比较懒，再加上今年也要毕业了，面临着实习、找工作、毕业论文等诸多事情，因此在很早就想过写这第二篇总结的计划，也一直拖到了现在才动笔。 这篇总结的内容主要是ICCV2017、CVPR2018以及ECCV2018三大会议中的一部分有关针对自然图像（还有不少针对人脸图像的）的深度学习端到端超分辨率方法的论文。从中大致也能看到两年来用于超分辨率的卷积神经网络的发展形势">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/01%20EnhanceNet.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/02%20EnhanceNet.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/15%20MemNet.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/16%20MemNet.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/03%20DBPN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/04%20DBPN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/05%20IDN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/06%20IDN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/07%20RDN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/08%20RDN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/09%20RCAN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/10%20RCAN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/11%20MSRN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/12%20MSRN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/13%20CARN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/14%20CARN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/17%20ZSSR.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/18%20SFTGAN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/19%20SRFeat.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/20%20SRFeat.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/21%20ESRGAN.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/22%20ESRGAN.png">
+<meta property="og:updated_time" content="2018-11-20T12:09:16.475Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深度学习端到端超分辨率方法发展历程（二）">
+<meta name="twitter:description" content="距离写上一篇总结已经过去了一年了。因为比较懒，再加上今年也要毕业了，面临着实习、找工作、毕业论文等诸多事情，因此在很早就想过写这第二篇总结的计划，也一直拖到了现在才动笔。 这篇总结的内容主要是ICCV2017、CVPR2018以及ECCV2018三大会议中的一部分有关针对自然图像（还有不少针对人脸图像的）的深度学习端到端超分辨率方法的论文。从中大致也能看到两年来用于超分辨率的卷积神经网络的发展形势">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/01%20EnhanceNet.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.3',
+    sidebar: {"position":"right","display":"hide","offset":12,"b2t":false,"scrollpercent":true,"onmobile":true},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: 'undefined',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/11/20/深度学习端到端超分辨率方法发展历程（二）/"/>
+
+
+
+
+
+  <title>深度学习端到端超分辨率方法发展历程（二） | 桂花糖的工坊</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-right page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">桂花糖的工坊</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description"></h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="st-search-show-outputs">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <form class="site-search-form">
+  <input type="text" id="st-search-input" class="st-search-input st-default-search-input" />
+</form>
+
+<script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+    (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+    e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v2/st.js','_st');
+
+  _st('install', 'aoQ6PufFyscKxkPmNGnx','2.0.0');
+</script>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/11/20/深度学习端到端超分辨率方法发展历程（二）/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Hao Lan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/legendary_chest.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="桂花糖的工坊">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">深度学习端到端超分辨率方法发展历程（二）</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-20T19:21:57+08:00">
+                2018-11-20
+              </time>
+            
+
+            
+              <span class="post-meta-divider">|</span>
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-check-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">更新于&#58;</span>
+              
+              <time title="更新于" itemprop="dateModified" datetime="2018-11-20T20:09:16+08:00">
+                2018-11-20
+              </time>
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/超分辨率/" itemprop="url" rel="index">
+                    <span itemprop="name">超分辨率</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/11/20/深度学习端到端超分辨率方法发展历程（二）/" class="leancloud_visitors" data-flag-title="深度学习端到端超分辨率方法发展历程（二）">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  5,247
+                </span>
+              
+
+              
+
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>距离写上一篇总结已经过去了一年了。因为比较懒，再加上今年也要毕业了，面临着实习、找工作、毕业论文等诸多事情，因此在很早就想过写这第二篇总结的计划，也一直拖到了现在才动笔。</p>
+<p>这篇总结的内容主要是ICCV2017、CVPR2018以及ECCV2018三大会议中的一部分有关针对自然图像（还有不少针对人脸图像的）的深度学习端到端超分辨率方法的论文。从中大致也能看到两年来用于超分辨率的卷积神经网络的发展形势。</p>
+<p><strong>1. EnhanceNet</strong><br>(<a href="https://arxiv.org/abs/1612.07919" target="_blank" rel="noopener">EnhanceNet: Single Image Super-Resolution Through Automated Texture Synthesis</a>, ICCV2017)</p>
+<p>文章中指出，低分辨率图像和高分辨率图像是一对多的，不同的高分辨率图像都能够得到相同的低分辨率图像。文章强调了用峰值信噪比(Peak Signal to Noise Ratio, PSNR)来作为超分辨率方法的评判准则，会使得超分辨率的图像存在外观模糊、过于平滑以及不自然等问题。使用均方误差（mean squared error, MSE）作为损失函数，得到的结果只是众多可能结果的平均值。为了说明这一点，文章还设计了一个简单的玩具实验（toy example）。</p>
+<p>本文关注的重点也是在MSE损失函数带来的问题上，因此更多的去介绍损失函数以及比较使用不同的损失函数得到的结果。生成网络以及判别网络的结构则用以下两个表格表示。生成网络部分采用最近邻上采样跟上一个卷积层的结构对图像的尺寸进行放大。由于在超分辨率的任务中，不需要学习低分辨率图像的恒等映射。而残差块的结构组成了生成网络的主要部分，因此生成网络也就是只将残差信息添加到低分辨率图像上。通过运用学习残差的思想，文章表示可以有助于加快网络收敛，稳定训练以及减少颜色偏移。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/01%20EnhanceNet.png" alt="EnhanceNet1"></p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/02%20EnhanceNet.png" alt="EnhanceNet2"></p>
+<p>文章一共使用了四种损失函数。一是<strong>MSE</strong>作为baseline。二是<strong>感知损失</strong>，为了同时获得低层和高层的特征，计算的是输出图像和真值图像输入到VGG-19中第二个和第五个池化层的特征之间的MSE。三是<strong>纹理匹配损失</strong>，由于Gram矩阵可以捕获风格信息，参考（<a href="https://blog.csdn.net/tunhuzhuang1836/article/details/78474129" target="_blank" rel="noopener">https://blog.csdn.net/tunhuzhuang1836/article/details/78474129</a>），由VGG中的特征得到Gram矩阵，同时训练时候计算的是块之间的差值，文章指出网络能够学习出与高分辨率图像包含相同局部纹理的输出图像。四是<strong>对抗损失</strong>，也就是加上判别网络。文章通过四种损失之间的不同组合，最终结果是只使用MSE的PSNR值最高，而同时使用感知损失、纹理匹配损失和对抗损失三种损失函数得到的结果更加自然真实。</p>
+<p><strong>2.MemNet</strong><br>(<a href="https://arxiv.org/abs/1708.02209" target="_blank" rel="noopener">MemNet: A Persistent Memory Network for Image Restoration</a>, ICCV2017)</p>
+<p>这篇文章中，作者说到已有的网络虽然深度一直在加深，但是都没有意识到前面层的特征对于后续层的作用会很小。于是，作者提出了一种由<strong>递归单元</strong>和<strong>门控单元</strong>组成的<strong>记忆模块</strong>，由于记忆模块拥有门控机制，可以将需要的信息保留下来，作者建立了一个很深很深的网络。网络结构图如下。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/15%20MemNet.png" alt="MemNet1"></p>
+<p>可以看到，网络由多个记忆模块通过稠密连接的方式组成。记忆模块的结构如下所示。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/16%20MemNet.png" alt="MemNet2"></p>
+<p>在记忆模块的递归单元中，由多个共享参数的残差模块稠密连接组成。经过多个共享参数的残差模块，可以递归地学习到不同感受野下的特征。所谓的门控单元其实就是一个1×1的卷积层，减小特征的通道数，保留需要的信息。</p>
+<p>由于网络中包含多个记忆模块，作者还提出可以对每个记忆模块的输出都计算损失的多监督的训练方式来提高结果。</p>
+<p>github(caffe): <a href="https://github.com/tyshiwo/MemNet" target="_blank" rel="noopener">https://github.com/tyshiwo/MemNet</a><br>github(tensorflow): <a href="https://github.com/ly-atdawn/MemNet-Tensorflow" target="_blank" rel="noopener">https://github.com/ly-atdawn/MemNet-Tensorflow</a><br>github(pytorch): <a href="https://github.com/Vandermode/pytorch-MemNet" target="_blank" rel="noopener">https://github.com/Vandermode/pytorch-MemNet</a></p>
+<p><strong>3. DBPN</strong><br>(<a href="https://arxiv.org/abs/1803.02735" target="_blank" rel="noopener">Deep Back-Projection Networks For Super-Resolution</a>, CVPR2018)</p>
+<p>这篇文章提出了一种迭代地计算上采样和下采样投影误差的<strong>错误反馈机制</strong>，对重建过程进行引导以得到更好的结果。文章提出的上采样和下采样映射单元如下图所示。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/03%20DBPN.png" alt="DBPN1"></p>
+<p>以上采样单元为例。先将输入的低分辨率尺寸映射到高分辨率特征图，接着再将这个高分辨率的特征图映射回输入尺寸大小的特征图，计算其与输入特征图的残差，再次将这个残差映射到高分辨率尺寸，与之前的高分辨率特征图相加得到最后的输出。这一具体过程让我想到了cycleGAN的思想，即需要同时考虑正向和反向的映射，对生成的高分辨率图像进行下采样也应能够与输入的低分辨率图像相近。在以上结构中，通过计算与输入数据的残差，实现了错误反馈的机制。下采样单元则是将上采样单元的放大尺寸和缩小尺寸的顺序颠倒一下。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/04%20DBPN.png" alt="DBPN2"></p>
+<p>DBPN的网络结构如上所示。通过采用稠密连接的方式，将多个上采样单元和下采样单元堆叠起来，最终通过一个卷积层重建出超分辨率结果。此方法在NTIRE2018比赛中8倍的bicubic上采样任务上拿到了第一名，PIRM2018比赛中也拿到了Region 2的第一名。</p>
+<p>github(caffe): <a href="https://github.com/alterzero/DBPN-caffe" target="_blank" rel="noopener">https://github.com/alterzero/DBPN-caffe</a><br>github(pytorch): <a href="https://github.com/alterzero/DBPN-Pytorch" target="_blank" rel="noopener">https://github.com/alterzero/DBPN-Pytorch</a></p>
+<p><strong>4. IDN</strong><br>(<a href="https://arxiv.org/abs/1803.09454" target="_blank" rel="noopener">Fast and Accurate Single Image Super-Resolution via Information Distillation Network</a>, CVPR2018)</p>
+<p>这篇文章关注的问题是，大多数方法为了获得更好的结果，都趋向于将网络加深或者扩大，实际的应用性很低。于是文章从特征图的通道维度入手，提出了一种叫做<strong>信息蒸馏块</strong>的结构。网络结构如下图所示，由特征提取块，堆叠的信息蒸馏块和重建块组成。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/05%20IDN.png" alt="IDN1"></p>
+<p>每个信息蒸馏块由<strong>增强单元</strong>和<strong>压缩单元</strong>组成。增强单元结构如下。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/06%20IDN.png" alt="IDN2"></p>
+<p>增强单元中，可以将上面的三个卷积层和下面的三个卷积层分别看成一个模块。其中上面的模块输出局部短路径信息，下面的模块输出局部长路径信息。每个模块中，第一个卷积层输出的通道数比第二个卷积层输出的通道数大，第三个卷积层输出的通道数比第一个卷积层输出的通道数大。上面的模块输出的局部短路径信息在通道维度上被划分为两部分，一部分与输入数据串联起来，另外一部分输入下面的模块。最后，将输入的数据，保留的局部短路径信息以及下面的模块输出的局部长路径信息相加，即得到增强单元的输出。</p>
+<p>增强单元的输出都会输入到压缩单元中。所谓的压缩单元，就是一个1×1的卷积层，将特征图的通道维度进行压缩，蒸馏掉冗余的信息。</p>
+<p>其实这篇文章方法的网络结构与VDSR或是LapSRN的网络结构很相似，都是学习高分辨率图像和低分辨率图像之间的残差，与bicubic上采样后的低分辨率图像相加得到输出。IDN通过压缩网络中特征图通道维度的方式，在减小网络参数，提高速度的情况下，还保证了重建的结果。</p>
+<p>github(caffe): <a href="https://github.com/Zheng222/IDN-Caffe" target="_blank" rel="noopener">https://github.com/Zheng222/IDN-Caffe</a></p>
+<p><strong>5.RDN</strong><br>(<a href="https://arxiv.org/abs/1802.08797" target="_blank" rel="noopener">Residual Dense Network for Image Super-Resolution</a>, CVPR2018)</p>
+<p>这篇文章的方法从名字上也能看出来吧。用了dense的方法，堆叠多个残差稠密块，提出了一个<strong>残差稠密网络</strong>，充分利用网络中各个层级的特征。与ICCV2017的SRDenseNet很像，不过SRDenseNet只有dense连接，本章方法多了1×1卷积后在相加的步骤，所以这个方法叫做residual dense。作者为在<strong>残差稠密块</strong>中的1×1卷积起名叫<strong>局部特征融合</strong>，残差稠密网络最后的1×1卷积起名叫<strong>全局特征融合</strong>。残差稠密网络和残差稠密块的结构分别如下所示。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/07%20RDN.png" alt="RDN1"></p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/08%20RDN.png" alt="RDN2"></p>
+<p>github(torch): <a href="https://github.com/yulunzhang/RDN" target="_blank" rel="noopener">https://github.com/yulunzhang/RDN</a><br>github(tensorflow): <a href="https://github.com/hengchuan/RDN-TensorFlow" target="_blank" rel="noopener">https://github.com/hengchuan/RDN-TensorFlow</a></p>
+<p><strong>6.RCAN</strong><br>(<a href="https://arxiv.org/abs/1807.02758" target="_blank" rel="noopener">Image Super-Resolution Using Very Deep Residual Channel Attention Networks</a>, ECCV2018)</p>
+<p>这篇文章中提到，越来越深的卷积神经网络是使得超分辨率任务的精度越来越高了，然而之前的网络中的特征包含有多余的低频信息，但是网络对于所有信息是同等对待的，从而限制了网络的表达能力。于是，这篇文章将通道维度的注意力机制引入了超分辨率任务中。网络结构如下。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/09%20RCAN.png" alt="RCAN1"></p>
+<p>网络结构由特征提取部分，堆叠的<strong>残差组</strong>用于提取深层特征，放大尺寸模块和重建部分组成。每个残差组包含多个<strong>残差通道注意力块</strong>。作者把这种结构起名叫残差中的残差，包含有长跳跃连接和短跳跃连接。作者指出，图像的低频信息可以通过这多个跳跃连接传递到网络深层，从而让网络关注于高频信息。我认为其实这本来就是残差网络的恒等映射的优点，并且可以让网络变得更深的原因吧。残差通道注意力块的结构如下图所示。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/10%20RCAN.png" alt="RCAN2"></p>
+<p>残差通道注意力块中用一个全局平均池化操作来获得每个通道的全局空间信息的表达。然后使用sigmoid函数实现门控机制，从而赋予网络通道注意力机制。</p>
+<p>文章给出的视觉结果全是图像中高频信息十分丰富的部分，都是很密集的线或者很密集的网格，与其他结果相比确实好很多，说明文章中所说的让网络关注于重建图像的高频信息部分，确实有很好的效果。</p>
+<p>github(pytorch): <a href="https://github.com/yulunzhang/RCAN" target="_blank" rel="noopener">https://github.com/yulunzhang/RCAN</a></p>
+<p><strong>7. MSRN</strong><br>(<a href="http://openaccess.thecvf.com/content_ECCV_2018/html/Juncheng_Li_Multi-scale_Residual_Network_ECCV_2018_paper.html" target="_blank" rel="noopener">Multi-scale Residual Network for Image Super-Resolution</a>, ECCV2018)</p>
+<p>这篇文章的出发点也是为了充分利用低分辨率图像的特征，从而提出了一个<strong>多尺度残差块</strong>的结构。所谓的多尺度残差块，就是将残差块和inception块进行了结合，使用了不同尺寸的卷积核，从而可以在不同的尺寸上获取图像的特征。文章指出这是第一次在残差结构上使用多尺度的模式。在多尺度残差块中，会对提取的局部多尺度特征进行融合。多尺度残差网络则由多个多尺度残差块堆叠而成，在网络的最后部分，将每一个多尺度残差块的输出结合在一起进行全局特征融合，从而重建出超分辨率结果。多尺度残差网络和多尺度残差块的结构示意图分别如下所示。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/11%20MSRN.png" alt="MSRN1"></p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/12%20MSRN.png" alt="MSRN2"></p>
+<p>github(pytorch): <a href="https://github.com/MIVRC/MSRN-PyTorch" target="_blank" rel="noopener">https://github.com/MIVRC/MSRN-PyTorch</a></p>
+<p><strong>8. CARN</strong><br>(<a href="https://arxiv.org/abs/1803.08664v4" target="_blank" rel="noopener">Fast, Accurate, and Lightweight Super-Resolution with Cascading Residual Network</a>, ECCV2018)</p>
+<p>这篇文章的出发点也是为了减轻网络的体量，增强实用性。作者采用了一种级联机制来实现目的，提出了<strong>级联残差网络</strong>。网络结构如下。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/13%20CARN.png" alt="CARN1"></p>
+<p>在级联残差网络中，包含多个<strong>级联块</strong>。级联块内部也包含多个跳跃的连接，这样就使得级联残差网络在局部和全局都可以混合多级的特征。网络使用亚像素卷积层进行尺寸的放大。级联块的结构如下所示。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/14%20CARN.png" alt="CARN2"></p>
+<p>为了提高网络的效率，作者提出了上图(b)的残差-E块，使用的是与MobileNet类似的方法，不过是使用分组卷积替换深度卷积。上图(c)则是级联块的结构。为了进一步减少参数，可以像递归网络一样，对级联块的参数进行共享，如上图中的(d)。</p>
+<p><strong>9.ZSSR</strong><br>(<a href="https://arxiv.org/abs/1712.06087" target="_blank" rel="noopener">“Zero-Shot” Super-Resolution using Deep Internal Learning</a>, CVPR2018)</p>
+<p>这一篇文章叫做“零样本”超分辨率，我个人觉得也算是一个比较另辟蹊径的想法吧。所谓的“零样本”超分辨率，作者采用的做法是利用图像的内部信息，用图像本身来训练网络。由于只有一个实例，因此先对这张图像进行不同倍率的下采样，得到这张图像本身以及多个不同的下采样版本，这些图片就被用来当作训练网络用的标签。再将这些图片进行目标倍率的下采样，即可得到训练的输入数据。对数据集再进行一些旋转、翻转等增强操作，然后用增强后的数据集训练一个<strong>相对轻量</strong>的卷积神经网络。由于训练数据都是由图像本身得到的，数据分布比较集中，因此网络能够很快得到收敛。再将图像本身输入到网络中，即可完成对原始图像的上采样操作。论文中的过程示意图如下。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/17%20ZSSR.png" alt="ZSSR"></p>
+<p>作为一个无监督的方法，ZSSR重建的图像的PSNR与一众用大量数据训练的监督方法相比还是会低一些，不过作者指出ZSSR更加适应真实场景中的图像超分辨率，除了对图像进行超分辨率外，还能够解决传感器噪声、图像压缩等问题，这都是只用bicubic下采样生成的数据集训练的方法完成不了的。我认为这篇文章真的是很有意思的一个想法，不过ZSSR应该不太适用于较大倍率的超分辨率任务。</p>
+<p>github(tensorflow): <a href="https://github.com/assafshocher/ZSSR" target="_blank" rel="noopener">https://github.com/assafshocher/ZSSR</a></p>
+<p><strong>10. SFTGAN</strong><br>(<a href="https://arxiv.org/abs/1804.02815" target="_blank" rel="noopener">Recovering Realistic Texture in Image Super-resolution by Deep Spatial Feature Transform</a>, CVPR2018)</p>
+<p>这篇文章的主要目标是在超分辨率结果中恢复出自然真实的纹理。为了实现这一目标，文章将语义分割概率图作为语义类别先验条件，即确定图像中属于天空、水或者草地等的区域，从而有助于生成更加丰富真实的纹理。作者提出了一种<strong>空间特征调制层</strong>，将语义类别先验结合到网络中。网络结构示意图如下所示。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/18%20SFTGAN.png" alt="SFTGAN"></p>
+<p>空间特征调制层的过程是由先验条件中得到仿射变换和平移的参数，再对网络的中间特征进行仿射变换操作。训练网络时使用的感知损失和对抗损失。</p>
+<p>github(pytorch/torch): <a href="https://github.com/xinntao/SFTGAN" target="_blank" rel="noopener">https://github.com/xinntao/SFTGAN</a></p>
+<p><strong>11. SRFeat</strong><br>(<a href="http://openaccess.thecvf.com/content_ECCV_2018/html/Seong-Jin_Park_SRFeat_Single_Image_ECCV_2018_paper.html" target="_blank" rel="noopener">SRFeat: Single Image Super-Resolution with Feature Discrimination</a>, ECCV2018)</p>
+<p>这篇文章中说到，虽然已有的基于GAN的超分辨率方法能够被用来生成真实的纹理信息，但是它们都倾向于生成与输入图像无关的不太有意义的高频噪声。于是，作者增加了一个作用于特征域的判别网络，使得生成网络能够生成与图像结构相关的高频特征。生成网络的结构如下。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/19%20SRFeat.png" alt="SRFeat1"></p>
+<p>生成网络中间部分由多个残差块以及远程跳跃连接组成，这样的结构可以更有效地传递远程层之间的信息。之后由亚像素卷积层完成尺寸放大的操作。判别网络结构如下。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/20%20SRFeat.png" alt="SRFeat2"></p>
+<p>训练网络时，作者先用均方误差预训练生成网络，然而，此时得到的结果并不能得到视觉上让人满意的结果。接下来，再用<strong>感知损失</strong>和<strong>两个对抗损失</strong>来训练网络。一个对抗损失对应的是<strong>图像判别网络</strong>，也就是和原有方法一样，对图像的像素值进行评判。另外一个对抗损失则对应的是<strong>特征判别网络</strong>，是对图像的特征图进行评判，即将感知损失中计算的对象交由判别网路进行判断。通过添加这个特征判别网络，生成网络被训练得能够合成更多有意义的高频细节。作者提到，他们尝试了多种特征判别网络的结构，但是得到的结果都很接近。</p>
+<p>从文章给出的视觉结果来看，添加了特征判别网络后，确实能够生成更加真实丰富的细节。</p>
+<p><strong>12.ESRGAN</strong><br>(<a href="https://arxiv.org/abs/1809.00219" target="_blank" rel="noopener">ESRGAN: Enhanced Super-Resolution Generative Adversarial Networks</a>, ECCV2018 PIRM Workshop)</p>
+<p>这一篇文章为了去除SRGAN的结果中的人工伪影，增强结果的视觉质量，从生成网络，判别网络和感知损失三个方面进行了提升。首先，生辰网络的结构图下。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/21%20ESRGAN.png" alt="ESRGAN1"></p>
+<p>图中橙色表示的基础块，可以选择残差块（与SRGAN一样），稠密块，或者是本文提出的残差中的残差稠密块。残差中的残差稠密块结构如下。</p>
+<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/22%20ESRGAN.png" alt="ESRGAN2"></p>
+<p>在EDSR中就指出了去掉BN层能够给超分辨率任务的结果带来提升。作者将BN层去掉，同时将原始残差块中的残差映射分支结构改为稠密连接的结构。一个残差中的残差稠密块中包含多个修改后残差块以及一个长跳跃连接的恒等映射，所以叫做残差中的残差。作者指出，由于这个结构使得网络更深并且更复杂，给结果的提升带来了好处。为了训练这么深的网络，同时使结果更好，还使用了残差缩放、更小的初始化等操作。</p>
+<p>判别网络的改进是将原先标准的判别网络改为了相对的判别网络，即原先的判别网络是判断输入图像是否是真实的，而现在判别网络是判断输入图像是否比假的图像更加真实，比较的对象是对一个mini-batch中所有假数据取平均值。使用相对的判别网络以后，反向传播给生成网络的梯度能来自生成数据和真实数据，而不像以前只能来自生成数据，因此生成网络能够生成更加锐利的边缘和更加丰富的纹理细节。</p>
+<p>对感知损失的改进是使用的是激活函数之前的数据，而不是使用激活函数输出的数据。由于激活函数是稀疏的，因此激活函数带了了非常弱的监督。同时，作者还发现使用激活函数输出的数据，会带来重建图像与GT亮度不一致的问题。在参加PIRM2018比赛中，作者尝试了不同的感知损失，还专门fine-tuned了VGG网络用于材料识别任务，因为这个任务更加注重于纹理而不是物体。</p>
+<p>文章中还提到了网络插值的操作。即先用均方误差训练好一个生成网络，再基于GAN训练一个生成网络，将两个训练好的网络中的所有参数赋予权重进行插值，即可得到一个插值的网络。通过调节权重，即可以平衡模型的视觉质量与逼真度。</p>
+<p>此方法在PIRM2018比赛中拿到了Region 3的第一名。</p>
+<p>github(pytorch): <a href="https://github.com/xinntao/ESRGAN" target="_blank" rel="noopener">https://github.com/xinntao/ESRGAN</a></p>
+<p>同时，再补充一点，CVPR2018的《<a href="https://arxiv.org/abs/1711.06077" target="_blank" rel="noopener">The Perception-Distortion Tradeoff</a>》，提出了超分辨率方法的感知指标理论，也在PIRM2018比赛中所使用。</p>
+<p>从这些文章中，我觉得超分辨率方法互相之间也都比较相像，在看一些文章的过程中，我会有种似曾相识的感觉，然后也就没有去介绍那么详细，因此大家对于特别感兴趣的文章，到原文中能够看到更多的细节。同时，本文中我有理解错或者写错的地方，也欢迎大家能够指出，希望能够和大家多多交流~</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    Hao Lan
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://yoursite.com/2018/11/20/深度学习端到端超分辨率方法发展历程（二）/" title="深度学习端到端超分辨率方法发展历程（二）">http://yoursite.com/2018/11/20/深度学习端到端超分辨率方法发展历程（二）/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/深度学习-Deep-Learning/" rel="tag"># 深度学习(Deep Learning)</a>
+          
+            <a href="/tags/卷积神经网络-CNN/" rel="tag"># 卷积神经网络(CNN)</a>
+          
+            <a href="/tags/图像处理-Image-Processing/" rel="tag"># 图像处理(Image Processing)</a>
+          
+            <a href="/tags/超分辨率-Super-resolution/" rel="tag"># 超分辨率(Super-resolution)</a>
+          
+        </div>
+      
+
+      
+      
+        <div class="post-widgets">
+        
+
+        
+
+        
+          
+          <div id="needsharebutton-postbottom">
+            <span class="btn">
+              <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </span>
+          </div>
+        
+        </div>
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/16/从SRCNN到EDSR，总结深度学习端到端超分辨率方法发展历程/" rel="next" title="从SRCNN到EDSR，总结深度学习端到端超分辨率方法发展历程">
+                <i class="fa fa-chevron-left"></i> 从SRCNN到EDSR，总结深度学习端到端超分辨率方法发展历程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC8yNzk1NC80NTMx"></div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+      <div id="sidebar-dimmer"></div>
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/images/legendary_chest.png"
+                alt="Hao Lan" />
+            
+              <p class="site-author-name" itemprop="name">Hao Lan</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://zhihu.com/people/lanhao66" target="_blank" title="Zhihu">
+                    
+                      <i class="fa fa-fw fa-globe"></i>Zhihu</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://weibo.com/u/3883336234?topnav=1&wvr=6&topsug=1&is_all=1" target="_blank" title="Weibo">
+                    
+                      <i class="fa fa-fw fa-weibo"></i>Weibo</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/aBlueMouse" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Hao Lan</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    
+      <span class="post-meta-item-text">Site words total count&#58;</span>
+    
+    <span title="Site words total count">11.9k</span>
+  
+</div>
+
+
+
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a></div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+      <div id="needsharebutton-float">
+        <span class="btn">
+          <i class="fa fa-share-alt" aria-hidden="true"></i>
+        </span>
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/three/three.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/three/canvas_lines.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("bQp9uvkwK0G0HKfHMWFwFB3c-gzGzoHsz", "Mh6PsqeYIWcsl3gifaR3BYWQ");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/needsharebutton/needsharebutton.css">
+
+  
+  
+  <script src="/lib/needsharebutton/needsharebutton.js"></script>
+
+  <script>
+    
+      pbOptions = {};
+      
+          pbOptions.iconStyle = "box";
+      
+          pbOptions.boxForm = "horizontal";
+      
+          pbOptions.position = "bottomCenter";
+      
+          pbOptions.networks = "Weibo,Wechat,Douban,QQZone,Twitter,Facebook";
+      
+      new needShareButton('#needsharebutton-postbottom', pbOptions);
+    
+    
+      flOptions = {};
+      
+          flOptions.iconStyle = "box";
+      
+          flOptions.boxForm = "horizontal";
+      
+          flOptions.position = "middleRight";
+      
+          flOptions.networks = "Weibo,Wechat,Douban,QQZone,Twitter,Facebook";
+      
+      new needShareButton('#needsharebutton-float', flOptions);
+    
+  </script>
+
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+  <script type="text/javascript" src="/js/src/js.cookie.js?v=5.1.3"></script>
+  <script type="text/javascript" src="/js/src/scroll-cookie.js?v=5.1.3"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({"tex2jax":{"inlineMath":[["$","$"],["\\(","\\)"]],"skipTags":["script","noscript","style","textarea","pre","code"],"processEscapes":true},"TeX":{"equationNumbers":{"autoNumber":"AMS"}}});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+
+
+  
+
+
+</body>
+</html>
