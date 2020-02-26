@@ -473,94 +473,16 @@
       
         
           
-            <p>距离写上一篇总结已经过去了一年了。因为比较懒，再加上今年也要毕业了，面临着实习、找工作、毕业论文等诸多事情，因此在很早就想过写这第二篇总结的计划，也一直拖到了现在才动笔。</p>
-<p>这篇总结的内容主要是ICCV2017、CVPR2018以及ECCV2018三大会议中的一部分有关针对自然图像（还有不少针对人脸图像的）的深度学习端到端超分辨率方法的论文。从中大致也能看到两年来用于超分辨率的卷积神经网络的发展形势。</p>
-<p><strong>1. EnhanceNet</strong><br>(<a href="https://arxiv.org/abs/1612.07919" target="_blank" rel="noopener">EnhanceNet: Single Image Super-Resolution Through Automated Texture Synthesis</a>, ICCV2017)</p>
-<p>文章中指出，低分辨率图像和高分辨率图像是一对多的，不同的高分辨率图像都能够得到相同的低分辨率图像。文章强调了用峰值信噪比(Peak Signal to Noise Ratio, PSNR)来作为超分辨率方法的评判准则，会使得超分辨率的图像存在外观模糊、过于平滑以及不自然等问题。使用均方误差（mean squared error, MSE）作为损失函数，得到的结果只是众多可能结果的平均值。为了说明这一点，文章还设计了一个简单的玩具实验（toy example）。</p>
-<p>本文关注的重点也是在MSE损失函数带来的问题上，因此更多的去介绍损失函数以及比较使用不同的损失函数得到的结果。生成网络以及判别网络的结构则用以下两个表格表示。生成网络部分采用最近邻上采样跟上一个卷积层的结构对图像的尺寸进行放大。由于在超分辨率的任务中，不需要学习低分辨率图像的恒等映射。而残差块的结构组成了生成网络的主要部分，因此生成网络也就是只将残差信息添加到低分辨率图像上。通过运用学习残差的思想，文章表示可以有助于加快网络收敛，稳定训练以及减少颜色偏移。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/01%20EnhanceNet.png" alt="EnhanceNet1"></p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/02%20EnhanceNet.png" alt="EnhanceNet2"></p>
-<p>文章一共使用了四种损失函数。一是<strong>MSE</strong>作为baseline。二是<strong>感知损失</strong>，为了同时获得低层和高层的特征，计算的是输出图像和真值图像输入到VGG-19中第二个和第五个池化层的特征之间的MSE。三是<strong>纹理匹配损失</strong>，由于Gram矩阵可以捕获风格信息，参考（<a href="https://blog.csdn.net/tunhuzhuang1836/article/details/78474129" target="_blank" rel="noopener">https://blog.csdn.net/tunhuzhuang1836/article/details/78474129</a>），由VGG中的特征得到Gram矩阵，同时训练时候计算的是块之间的差值，文章指出网络能够学习出与高分辨率图像包含相同局部纹理的输出图像。四是<strong>对抗损失</strong>，也就是加上判别网络。文章通过四种损失之间的不同组合，最终结果是只使用MSE的PSNR值最高，而同时使用感知损失、纹理匹配损失和对抗损失三种损失函数得到的结果更加自然真实。</p>
-<p><strong>2.MemNet</strong><br>(<a href="https://arxiv.org/abs/1708.02209" target="_blank" rel="noopener">MemNet: A Persistent Memory Network for Image Restoration</a>, ICCV2017)</p>
-<p>这篇文章中，作者说到已有的网络虽然深度一直在加深，但是都没有意识到前面层的特征对于后续层的作用会很小。于是，作者提出了一种由<strong>递归单元</strong>和<strong>门控单元</strong>组成的<strong>记忆模块</strong>，由于记忆模块拥有门控机制，可以将需要的信息保留下来，作者建立了一个很深很深的网络。网络结构图如下。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/15%20MemNet.png" alt="MemNet1"></p>
-<p>可以看到，网络由多个记忆模块通过稠密连接的方式组成。记忆模块的结构如下所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/16%20MemNet.png" alt="MemNet2"></p>
-<p>在记忆模块的递归单元中，由多个共享参数的残差模块稠密连接组成。经过多个共享参数的残差模块，可以递归地学习到不同感受野下的特征。所谓的门控单元其实就是一个1×1的卷积层，减小特征的通道数，保留需要的信息。</p>
-<p>由于网络中包含多个记忆模块，作者还提出可以对每个记忆模块的输出都计算损失的多监督的训练方式来提高结果。</p>
-<p>github(caffe): <a href="https://github.com/tyshiwo/MemNet" target="_blank" rel="noopener">https://github.com/tyshiwo/MemNet</a><br>github(tensorflow): <a href="https://github.com/ly-atdawn/MemNet-Tensorflow" target="_blank" rel="noopener">https://github.com/ly-atdawn/MemNet-Tensorflow</a><br>github(pytorch): <a href="https://github.com/Vandermode/pytorch-MemNet" target="_blank" rel="noopener">https://github.com/Vandermode/pytorch-MemNet</a></p>
-<p><strong>3. DBPN</strong><br>(<a href="https://arxiv.org/abs/1803.02735" target="_blank" rel="noopener">Deep Back-Projection Networks For Super-Resolution</a>, CVPR2018)</p>
-<p>这篇文章提出了一种迭代地计算上采样和下采样投影误差的<strong>错误反馈机制</strong>，对重建过程进行引导以得到更好的结果。文章提出的上采样和下采样映射单元如下图所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/03%20DBPN.png" alt="DBPN1"></p>
-<p>以上采样单元为例。先将输入的低分辨率尺寸映射到高分辨率特征图，接着再将这个高分辨率的特征图映射回输入尺寸大小的特征图，计算其与输入特征图的残差，再次将这个残差映射到高分辨率尺寸，与之前的高分辨率特征图相加得到最后的输出。这一具体过程让我想到了cycleGAN的思想，即需要同时考虑正向和反向的映射，对生成的高分辨率图像进行下采样也应能够与输入的低分辨率图像相近。在以上结构中，通过计算与输入数据的残差，实现了错误反馈的机制。下采样单元则是将上采样单元的放大尺寸和缩小尺寸的顺序颠倒一下。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/04%20DBPN.png" alt="DBPN2"></p>
-<p>DBPN的网络结构如上所示。通过采用稠密连接的方式，将多个上采样单元和下采样单元堆叠起来，最终通过一个卷积层重建出超分辨率结果。此方法在NTIRE2018比赛中8倍的bicubic上采样任务上拿到了第一名，PIRM2018比赛中也拿到了Region 2的第一名。</p>
-<p>github(caffe): <a href="https://github.com/alterzero/DBPN-caffe" target="_blank" rel="noopener">https://github.com/alterzero/DBPN-caffe</a><br>github(pytorch): <a href="https://github.com/alterzero/DBPN-Pytorch" target="_blank" rel="noopener">https://github.com/alterzero/DBPN-Pytorch</a></p>
-<p><strong>4. IDN</strong><br>(<a href="https://arxiv.org/abs/1803.09454" target="_blank" rel="noopener">Fast and Accurate Single Image Super-Resolution via Information Distillation Network</a>, CVPR2018)</p>
-<p>这篇文章关注的问题是，大多数方法为了获得更好的结果，都趋向于将网络加深或者扩大，实际的应用性很低。于是文章从特征图的通道维度入手，提出了一种叫做<strong>信息蒸馏块</strong>的结构。网络结构如下图所示，由特征提取块，堆叠的信息蒸馏块和重建块组成。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/05%20IDN.png" alt="IDN1"></p>
-<p>每个信息蒸馏块由<strong>增强单元</strong>和<strong>压缩单元</strong>组成。增强单元结构如下。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/06%20IDN.png" alt="IDN2"></p>
-<p>增强单元中，可以将上面的三个卷积层和下面的三个卷积层分别看成一个模块。其中上面的模块输出局部短路径信息，下面的模块输出局部长路径信息。每个模块中，第一个卷积层输出的通道数比第二个卷积层输出的通道数大，第三个卷积层输出的通道数比第一个卷积层输出的通道数大。上面的模块输出的局部短路径信息在通道维度上被划分为两部分，一部分与输入数据串联起来，另外一部分输入下面的模块。最后，将输入的数据，保留的局部短路径信息以及下面的模块输出的局部长路径信息相加，即得到增强单元的输出。</p>
-<p>增强单元的输出都会输入到压缩单元中。所谓的压缩单元，就是一个1×1的卷积层，将特征图的通道维度进行压缩，蒸馏掉冗余的信息。</p>
-<p>其实这篇文章方法的网络结构与VDSR或是LapSRN的网络结构很相似，都是学习高分辨率图像和低分辨率图像之间的残差，与bicubic上采样后的低分辨率图像相加得到输出。IDN通过压缩网络中特征图通道维度的方式，在减小网络参数，提高速度的情况下，还保证了重建的结果。</p>
-<p>github(caffe): <a href="https://github.com/Zheng222/IDN-Caffe" target="_blank" rel="noopener">https://github.com/Zheng222/IDN-Caffe</a></p>
-<p><strong>5.RDN</strong><br>(<a href="https://arxiv.org/abs/1802.08797" target="_blank" rel="noopener">Residual Dense Network for Image Super-Resolution</a>, CVPR2018)</p>
-<p>这篇文章的方法从名字上也能看出来吧。用了dense的方法，堆叠多个残差稠密块，提出了一个<strong>残差稠密网络</strong>，充分利用网络中各个层级的特征。与ICCV2017的SRDenseNet很像，不过SRDenseNet只有dense连接，本章方法多了1×1卷积后在相加的步骤，所以这个方法叫做residual dense。作者为在<strong>残差稠密块</strong>中的1×1卷积起名叫<strong>局部特征融合</strong>，残差稠密网络最后的1×1卷积起名叫<strong>全局特征融合</strong>。残差稠密网络和残差稠密块的结构分别如下所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/07%20RDN.png" alt="RDN1"></p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/08%20RDN.png" alt="RDN2"></p>
-<p>github(torch): <a href="https://github.com/yulunzhang/RDN" target="_blank" rel="noopener">https://github.com/yulunzhang/RDN</a><br>github(tensorflow): <a href="https://github.com/hengchuan/RDN-TensorFlow" target="_blank" rel="noopener">https://github.com/hengchuan/RDN-TensorFlow</a></p>
-<p><strong>6.RCAN</strong><br>(<a href="https://arxiv.org/abs/1807.02758" target="_blank" rel="noopener">Image Super-Resolution Using Very Deep Residual Channel Attention Networks</a>, ECCV2018)</p>
-<p>这篇文章中提到，越来越深的卷积神经网络是使得超分辨率任务的精度越来越高了，然而之前的网络中的特征包含有多余的低频信息，但是网络对于所有信息是同等对待的，从而限制了网络的表达能力。于是，这篇文章将通道维度的注意力机制引入了超分辨率任务中。网络结构如下。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/09%20RCAN.png" alt="RCAN1"></p>
-<p>网络结构由特征提取部分，堆叠的<strong>残差组</strong>用于提取深层特征，放大尺寸模块和重建部分组成。每个残差组包含多个<strong>残差通道注意力块</strong>。作者把这种结构起名叫残差中的残差，包含有长跳跃连接和短跳跃连接。作者指出，图像的低频信息可以通过这多个跳跃连接传递到网络深层，从而让网络关注于高频信息。我认为其实这本来就是残差网络的恒等映射的优点，并且可以让网络变得更深的原因吧。残差通道注意力块的结构如下图所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/10%20RCAN.png" alt="RCAN2"></p>
-<p>残差通道注意力块中用一个全局平均池化操作来获得每个通道的全局空间信息的表达。然后使用sigmoid函数实现门控机制，从而赋予网络通道注意力机制。</p>
-<p>文章给出的视觉结果全是图像中高频信息十分丰富的部分，都是很密集的线或者很密集的网格，与其他结果相比确实好很多，说明文章中所说的让网络关注于重建图像的高频信息部分，确实有很好的效果。</p>
-<p>github(pytorch): <a href="https://github.com/yulunzhang/RCAN" target="_blank" rel="noopener">https://github.com/yulunzhang/RCAN</a></p>
-<p><strong>7. MSRN</strong><br>(<a href="http://openaccess.thecvf.com/content_ECCV_2018/html/Juncheng_Li_Multi-scale_Residual_Network_ECCV_2018_paper.html" target="_blank" rel="noopener">Multi-scale Residual Network for Image Super-Resolution</a>, ECCV2018)</p>
-<p>这篇文章的出发点也是为了充分利用低分辨率图像的特征，从而提出了一个<strong>多尺度残差块</strong>的结构。所谓的多尺度残差块，就是将残差块和inception块进行了结合，使用了不同尺寸的卷积核，从而可以在不同的尺寸上获取图像的特征。文章指出这是第一次在残差结构上使用多尺度的模式。在多尺度残差块中，会对提取的局部多尺度特征进行融合。多尺度残差网络则由多个多尺度残差块堆叠而成，在网络的最后部分，将每一个多尺度残差块的输出结合在一起进行全局特征融合，从而重建出超分辨率结果。多尺度残差网络和多尺度残差块的结构示意图分别如下所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/11%20MSRN.png" alt="MSRN1"></p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/12%20MSRN.png" alt="MSRN2"></p>
-<p>github(pytorch): <a href="https://github.com/MIVRC/MSRN-PyTorch" target="_blank" rel="noopener">https://github.com/MIVRC/MSRN-PyTorch</a></p>
-<p><strong>8. CARN</strong><br>(<a href="https://arxiv.org/abs/1803.08664v4" target="_blank" rel="noopener">Fast, Accurate, and Lightweight Super-Resolution with Cascading Residual Network</a>, ECCV2018)</p>
-<p>这篇文章的出发点也是为了减轻网络的体量，增强实用性。作者采用了一种级联机制来实现目的，提出了<strong>级联残差网络</strong>。网络结构如下。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/13%20CARN.png" alt="CARN1"></p>
-<p>在级联残差网络中，包含多个<strong>级联块</strong>。级联块内部也包含多个跳跃的连接，这样就使得级联残差网络在局部和全局都可以混合多级的特征。网络使用亚像素卷积层进行尺寸的放大。级联块的结构如下所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/14%20CARN.png" alt="CARN2"></p>
-<p>为了提高网络的效率，作者提出了上图(b)的残差-E块，使用的是与MobileNet类似的方法，不过是使用分组卷积替换深度卷积。上图(c)则是级联块的结构。为了进一步减少参数，可以像递归网络一样，对级联块的参数进行共享，如上图中的(d)。</p>
-<p><strong>9.ZSSR</strong><br>(<a href="https://arxiv.org/abs/1712.06087" target="_blank" rel="noopener">“Zero-Shot” Super-Resolution using Deep Internal Learning</a>, CVPR2018)</p>
-<p>这一篇文章叫做“零样本”超分辨率，我个人觉得也算是一个比较另辟蹊径的想法吧。所谓的“零样本”超分辨率，作者采用的做法是利用图像的内部信息，用图像本身来训练网络。由于只有一个实例，因此先对这张图像进行不同倍率的下采样，得到这张图像本身以及多个不同的下采样版本，这些图片就被用来当作训练网络用的标签。再将这些图片进行目标倍率的下采样，即可得到训练的输入数据。对数据集再进行一些旋转、翻转等增强操作，然后用增强后的数据集训练一个<strong>相对轻量</strong>的卷积神经网络。由于训练数据都是由图像本身得到的，数据分布比较集中，因此网络能够很快得到收敛。再将图像本身输入到网络中，即可完成对原始图像的上采样操作。论文中的过程示意图如下。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/17%20ZSSR.png" alt="ZSSR"></p>
-<p>作为一个无监督的方法，ZSSR重建的图像的PSNR与一众用大量数据训练的监督方法相比还是会低一些，不过作者指出ZSSR更加适应真实场景中的图像超分辨率，除了对图像进行超分辨率外，还能够解决传感器噪声、图像压缩等问题，这都是只用bicubic下采样生成的数据集训练的方法完成不了的。我认为这篇文章真的是很有意思的一个想法，不过ZSSR应该不太适用于较大倍率的超分辨率任务。</p>
-<p>github(tensorflow): <a href="https://github.com/assafshocher/ZSSR" target="_blank" rel="noopener">https://github.com/assafshocher/ZSSR</a></p>
-<p><strong>10. SFTGAN</strong><br>(<a href="https://arxiv.org/abs/1804.02815" target="_blank" rel="noopener">Recovering Realistic Texture in Image Super-resolution by Deep Spatial Feature Transform</a>, CVPR2018)</p>
-<p>这篇文章的主要目标是在超分辨率结果中恢复出自然真实的纹理。为了实现这一目标，文章将语义分割概率图作为语义类别先验条件，即确定图像中属于天空、水或者草地等的区域，从而有助于生成更加丰富真实的纹理。作者提出了一种<strong>空间特征调制层</strong>，将语义类别先验结合到网络中。网络结构示意图如下所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/18%20SFTGAN.png" alt="SFTGAN"></p>
-<p>空间特征调制层的过程是由先验条件中得到仿射变换和平移的参数，再对网络的中间特征进行仿射变换操作。训练网络时使用的感知损失和对抗损失。</p>
-<p>github(pytorch/torch): <a href="https://github.com/xinntao/SFTGAN" target="_blank" rel="noopener">https://github.com/xinntao/SFTGAN</a></p>
-<p><strong>11. SRFeat</strong><br>(<a href="http://openaccess.thecvf.com/content_ECCV_2018/html/Seong-Jin_Park_SRFeat_Single_Image_ECCV_2018_paper.html" target="_blank" rel="noopener">SRFeat: Single Image Super-Resolution with Feature Discrimination</a>, ECCV2018)</p>
-<p>这篇文章中说到，虽然已有的基于GAN的超分辨率方法能够被用来生成真实的纹理信息，但是它们都倾向于生成与输入图像无关的不太有意义的高频噪声。于是，作者增加了一个作用于特征域的判别网络，使得生成网络能够生成与图像结构相关的高频特征。生成网络的结构如下。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/19%20SRFeat.png" alt="SRFeat1"></p>
-<p>生成网络中间部分由多个残差块以及远程跳跃连接组成，这样的结构可以更有效地传递远程层之间的信息。之后由亚像素卷积层完成尺寸放大的操作。判别网络结构如下。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/20%20SRFeat.png" alt="SRFeat2"></p>
-<p>训练网络时，作者先用均方误差预训练生成网络，然而，此时得到的结果并不能得到视觉上让人满意的结果。接下来，再用<strong>感知损失</strong>和<strong>两个对抗损失</strong>来训练网络。一个对抗损失对应的是<strong>图像判别网络</strong>，也就是和原有方法一样，对图像的像素值进行评判。另外一个对抗损失则对应的是<strong>特征判别网络</strong>，是对图像的特征图进行评判，即将感知损失中计算的对象交由判别网路进行判断。通过添加这个特征判别网络，生成网络被训练得能够合成更多有意义的高频细节。作者提到，他们尝试了多种特征判别网络的结构，但是得到的结果都很接近。</p>
-<p>从文章给出的视觉结果来看，添加了特征判别网络后，确实能够生成更加真实丰富的细节。</p>
-<p><strong>12.ESRGAN</strong><br>(<a href="https://arxiv.org/abs/1809.00219" target="_blank" rel="noopener">ESRGAN: Enhanced Super-Resolution Generative Adversarial Networks</a>, ECCV2018 PIRM Workshop)</p>
-<p>这一篇文章为了去除SRGAN的结果中的人工伪影，增强结果的视觉质量，从生成网络，判别网络和感知损失三个方面进行了提升。首先，生辰网络的结构图下。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/21%20ESRGAN.png" alt="ESRGAN1"></p>
-<p>图中橙色表示的基础块，可以选择残差块（与SRGAN一样），稠密块，或者是本文提出的残差中的残差稠密块。残差中的残差稠密块结构如下。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/EnhanceNet%20to%20ESRGAN/22%20ESRGAN.png" alt="ESRGAN2"></p>
-<p>在EDSR中就指出了去掉BN层能够给超分辨率任务的结果带来提升。作者将BN层去掉，同时将原始残差块中的残差映射分支结构改为稠密连接的结构。一个残差中的残差稠密块中包含多个修改后残差块以及一个长跳跃连接的恒等映射，所以叫做残差中的残差。作者指出，由于这个结构使得网络更深并且更复杂，给结果的提升带来了好处。为了训练这么深的网络，同时使结果更好，还使用了残差缩放、更小的初始化等操作。</p>
-<p>判别网络的改进是将原先标准的判别网络改为了相对的判别网络，即原先的判别网络是判断输入图像是否是真实的，而现在判别网络是判断输入图像是否比假的图像更加真实，比较的对象是对一个mini-batch中所有假数据取平均值。使用相对的判别网络以后，反向传播给生成网络的梯度能来自生成数据和真实数据，而不像以前只能来自生成数据，因此生成网络能够生成更加锐利的边缘和更加丰富的纹理细节。</p>
-<p>对感知损失的改进是使用的是激活函数之前的数据，而不是使用激活函数输出的数据。由于激活函数是稀疏的，因此激活函数带了了非常弱的监督。同时，作者还发现使用激活函数输出的数据，会带来重建图像与GT亮度不一致的问题。在参加PIRM2018比赛中，作者尝试了不同的感知损失，还专门fine-tuned了VGG网络用于材料识别任务，因为这个任务更加注重于纹理而不是物体。</p>
-<p>文章中还提到了网络插值的操作。即先用均方误差训练好一个生成网络，再基于GAN训练一个生成网络，将两个训练好的网络中的所有参数赋予权重进行插值，即可得到一个插值的网络。通过调节权重，即可以平衡模型的视觉质量与逼真度。</p>
-<p>此方法在PIRM2018比赛中拿到了Region 3的第一名。</p>
-<p>github(pytorch): <a href="https://github.com/xinntao/ESRGAN" target="_blank" rel="noopener">https://github.com/xinntao/ESRGAN</a></p>
-<p>同时，再补充一点，CVPR2018的《<a href="https://arxiv.org/abs/1711.06077" target="_blank" rel="noopener">The Perception-Distortion Tradeoff</a>》，提出了超分辨率方法的感知指标理论，也在PIRM2018比赛中所使用。</p>
-<p>从这些文章中，我觉得超分辨率方法互相之间也都比较相像，在看一些文章的过程中，我会有种似曾相识的感觉，然后也就没有去介绍那么详细，因此大家对于特别感兴趣的文章，到原文中能够看到更多的细节。同时，本文中我有理解错或者写错的地方，也欢迎大家能够指出，希望能够和大家多多交流~</p>
-
-          
+          距离写上一篇总结已经过去了一年了。因为比较懒，再加上今年也要毕业了，面临着实习、找工作、毕业论文等诸多事情，因此在很早就想过写这第二篇总结的计划，也一直拖到了现在才动笔。
+这篇总结的内容主要是ICCV2017、CVPR2018以及ECCV2018三大会议中的一部分有关针对自然图像（还有不少针对人脸图
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/11/20/深度学习端到端超分辨率方法发展历程（二）/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -742,98 +664,16 @@
       
         
           
-            <p>超分辨率技术（Super-Resolution, SR）是指从观测到的低分辨率图像重建出相应的高分辨率图像，在监控设备、卫星图像和医学影像等领域都有重要的应用价值。</p>
-<p>本文针对端到端的基于深度学习的单张图像超分辨率方法(Single Image Super-Resolution, SISR)，总结一下从SRCNN到EDSR的发展历程。(排列顺序大致按论文中给出的4倍上采样结果的峰值信噪比(Peak Signal to Noise Ratio, PSNR)从低到高排列)</p>
-<p><strong>1. SRCNN</strong><br>(<a href="http://personal.ie.cuhk.edu.hk/~ccloy/files/eccv_2014_deepresolution.pdf" target="_blank" rel="noopener">Learning a Deep Convolutional Network for Image Super-Resolution</a>, ECCV2014)</p>
-<p>SRCNN是深度学习用在超分辨率重建上的开山之作。SRCNN的网络结构非常简单，仅仅用了三个卷积层，网络结构如下图所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/01%20SRCNN.png" alt="SRCNN"></p>
-<p>SRCNN首先使用双三次(bicubic)插值将低分辨率图像放大成目标尺寸，接着通过三层卷积网络拟合非线性映射，最后输出高分辨率图像结果。本文中，作者将三层卷积的结构解释成三个步骤：<strong>图像块的提取和特征表示，特征非线性映射和最终的重建</strong>。</p>
-<p>三个卷积层使用的卷积核的大小分为为9x9,，1x1和5x5，前两个的输出特征个数分别为64和32。用Timofte数据集（包含91幅图像）和ImageNet大数据集进行训练。使用均方误差(Mean Squared Error, MSE)作为损失函数，有利于获得较高的PSNR。</p>
-<p>code: <a href="http://mmlab.ie.cuhk.edu.hk/projects/SRCNN.html" target="_blank" rel="noopener">http://mmlab.ie.cuhk.edu.hk/projects/SRCNN.html</a></p>
-<p><strong>2. FSRCNN</strong><br>(<a href="https://arxiv.org/abs/1608.00367" target="_blank" rel="noopener">Accelerating the Super-Resolution Convolutional Neural Network</a>, ECCV2016)</p>
-<p>FSRCNN与SRCNN都是香港中文大学Dong Chao， Xiaoou Tang等人的工作。FSRCNN是对之前SRCNN的改进，主要在三个方面：一是在最后使用了一个反卷积层放大尺寸，因此可以直接将原始的低分辨率图像输入到网络中，而不是像之前SRCNN那样需要先通过bicubic方法放大尺寸。二是改变特征维数，使用更小的卷积核和使用更多的映射层。三是可以共享其中的映射层，如果需要训练不同上采样倍率的模型，只需要fine-tuning最后的反卷积层。</p>
-<p>由于FSRCNN不需要在网络外部进行放大图片尺寸的操作，同时通过添加收缩层和扩张层，将一个大层用一些小层来代替，因此FSRCNN与SRCNN相比有较大的速度提升。FSRCNN在训练时也可以只fine-tuning最后的反卷积层，因此训练速度也更快。FSRCNN与SCRNN的结构对比如下图所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/02%20FSRCNN.png" alt="FSRCNN"></p>
-<p>FSRCNN可以分为五个部分。<strong>特征提取</strong>：SRCNN中针对的是插值后的低分辨率图像，选取的核大小为9×9，这里直接是对原始的低分辨率图像进行操作，因此可以选小一点，设置为5×5。<strong>收缩</strong>：通过应用1×1的卷积核进行降维，减少网络的参数，降低计算复杂度。<strong>非线性映射</strong>：感受野大，能够表现的更好。SRCNN中，采用的是5×5的卷积核，但是5×5的卷积核计算量会比较大。用两个串联的3×3的卷积核可以替代一个5×5的卷积核，同时两个串联的小卷积核需要的参数3×3×2=18比一个大卷积核5×5=25的参数要小。FSRCNN网络中通过m个核大小为3×3的卷积层进行串联。<strong>扩张</strong>：作者发现低维度的特征带来的重建效果不是太好，因此应用1×1的卷积核进行扩维，相当于收缩的逆过程。<strong>反卷积层</strong>：可以堪称是卷积层的逆操作，如果步长为n，那么尺寸放大n倍，实现了上采样的操作。</p>
-<p>FSRCNN中激活函数采用PReLU，损失函数仍然是均方误差。对CNN来说，Set91并不足够去训练大的网络结构，FSRCNN提出general-100 + Set91进行充当训练集。并且进行数据增强，1）缩小尺寸为原来的0.9, 0.8, 0.7和0.6。2）旋转 90°，180°和270°，因此获得了数据量的提升。</p>
-<p>code: <a href="http://mmlab.ie.cuhk.edu.hk/projects/FSRCNN.html" target="_blank" rel="noopener">http://mmlab.ie.cuhk.edu.hk/projects/FSRCNN.html</a></p>
-<p><strong>3. ESPCN</strong><br>(<a href="https://arxiv.org/abs/1609.05158" target="_blank" rel="noopener">Real-Time Single Image and Video Super-Resolution Using an Efficient Sub-Pixel Convolutional Neural Network</a>, CVPR2016)</p>
-<p>作者在本文中介绍到，像SRCNN那样的方法，由于需要将低分辨率图像通过上采样插值得到与高分辨率图像相同大小的尺寸，再输入到网络中，这意味着要在较高的分辨率上进行卷积操作，从而增加了计算复杂度。本文提出了一种直接在低分辨率图像尺寸上提取特征，计算得到高分辨率图像的高效方法。ESPCN网络结构如下图所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/03%20ESPCN.png" alt="ESPCN"></p>
-<p>ESPCN的核心概念是亚像素卷积层(sub-pixel convolutional layer)。网络的输入是原始低分辨率图像，通过三个卷积层以后，得到通道数为 $r^{2}$ 的与输入图像大小一样的特征图像。再将特征图像每个像素的 $r^{2}$ 个通道重新排列成一个 $r \times r$ 的区域，对应高分辨率图像中一个 $r \times r$ 大小的子块，从而大小为 $H \times W \times {r^2}$ 的特征图像被重新排列成 $rH \times rW \times 1$ 的高分辨率图像。我理解的亚像素卷积层包含两个过程，一个普通的卷积层和后面的排列像素的步骤。就是说，最后一层卷积层输出的特征个数需要设置成固定值，即放大倍数r的平方，这样总的像素个数就与要得到的高分辨率图像一致，将像素进行重新排列就能得到高分辨率图。</p>
-<p>在ESPCN网络中，图像尺寸放大过程的插值函数被隐含地包含在前面的卷积层中，可以自动学习到。由于卷积运算都是在低分辨率图像尺寸大小上进行，因此效率会较高。</p>
-<p>训练时，可以将输入的训练数据标签，预处理成重新排列操作前的格式，比如将21×21的单通道图，预处理成9个通道，7×7的图，这样在训练时，就不需要做重新排列的操作。另外，ESPCN激活函数采用tanh替代了ReLU。损失函数为均方误差。</p>
-<p>github(tensorflow): <a href="https://github.com/drakelevy/ESPCN-TensorFlow" target="_blank" rel="noopener">https://github.com/drakelevy/ESPCN-TensorFlow</a><br>github(pytorch): <a href="https://github.com/leftthomas/ESPCN" target="_blank" rel="noopener">https://github.com/leftthomas/ESPCN</a><br>github(caffe): <a href="https://github.com/wangxuewen99/Super-Resolution/tree/master/ESPCN" target="_blank" rel="noopener">https://github.com/wangxuewen99/Super-Resolution/tree/master/ESPCN</a></p>
-<p><strong>4. VDSR</strong><br>(<a href="https://arxiv.org/abs/1511.04587" target="_blank" rel="noopener">Accurate Image Super-Resolution Using Very Deep Convolutional Networks</a>, CVPR2016)</p>
-<p>在介绍VDSR之前，首先想先提一下何恺明在2015年的时候提出的残差网络ResNet。ResNet的提出，解决了之前网络结构比较深时无法训练的问题，性能也得到了提升，ResNet也获得了CVPR2016的best paper。残差网络结构(residual network)被应用在了大量的工作中。</p>
-<p>正如在VDSR论文中作者提到，输入的低分辨率图像和输出的高分辨率图像在很大程度上是相似的，也就是指低分辨率图像携带的低频信息与高分辨率图像的低频信息相近，训练时带上这部分会多花费大量的时间，实际上我们只需要学习高分辨率图像和低分辨率图像之间的高频部分残差即可。残差网络结构的思想特别适合用来解决超分辨率问题，可以说影响了之后的深度学习超分辨率方法。VDSR是最直接明显的学习残差的结构，其网络结构如下图所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/04%20VDSR.png" alt="VDSR"></p>
-<p>VDSR将插值后得到的变成目标尺寸的低分辨率图像作为网络的输入，再将这个图像与网络学到的残差相加得到最终的网络的输出。VDSR主要有4点贡献。1.加深了网络结构(20层)，使得越深的网络层拥有更大的感受野。文章选取3×3的卷积核，深度为D的网络拥有(2D+1)×(2D+1)的感受野。2.采用残差学习，残差图像比较稀疏，大部分值都为0或者比较小，因此收敛速度快。VDSR还应用了自适应梯度裁剪(Adjustable Gradient Clipping)，将梯度限制在某一范围，也能够加快收敛过程。3.VDSR在每次卷积前都对图像进行补0操作，这样保证了所有的特征图和最终的输出图像在尺寸上都保持一致，解决了图像通过逐步卷积会越来越小的问题。文中说实验证明补0操作对边界像素的预测结果也能够得到提升。4.VDSR将不同倍数的图像混合在一起训练，这样训练出来的一个模型就可以解决不同倍数的超分辨率问题。</p>
-<p>code: <a href="https://cv.snu.ac.kr/research/VDSR/" target="_blank" rel="noopener">https://cv.snu.ac.kr/research/VDSR/</a><br>github(caffe): <a href="https://github.com/huangzehao/caffe-vdsr" target="_blank" rel="noopener">https://github.com/huangzehao/caffe-vdsr</a><br>github(tensorflow): <a href="https://github.com/Jongchan/tensorflow-vdsr" target="_blank" rel="noopener">https://github.com/Jongchan/tensorflow-vdsr</a><br>github(pytorch): <a href="https://github.com/twtygqyy/pytorch-vdsr" target="_blank" rel="noopener">https://github.com/twtygqyy/pytorch-vdsr</a></p>
-<p><strong>5. DRCN</strong><br>(<a href="https://arxiv.org/abs/1511.04491" target="_blank" rel="noopener">Deeply-Recursive Convolutional Network for Image Super-Resolution</a>, CVPR2016)</p>
-<p>DRCN与上面的VDSR都是来自首尔国立大学计算机视觉实验室的工作，两篇论文都发表在CVPR2016上，两种方法的结果非常接近。DRCN第一次将之前已有的递归神经网络(Recursive Neural Network)结构应用在超分辨率处理中。同时，利用残差学习的思想(文中的跳跃连接（Skip-Connection）)，加深了网络结构(16个递归)，增加了网络感受野，提升了性能。DRCN网络结构如下图所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/05%20DRCN.png" alt="DRCN"></p>
-<p>DRCN输入的是插值后的图像，分为三个模块，第一个是<strong>Embedding network</strong>，相当于特征提取，第二个是<strong>Inference network</strong>, 相当于特征的非线性映射，第三个是<strong>Reconstruction network</strong>,即从特征图像恢复最后的重建结果。其中的Inference network是一个递归网络，即数据循环地通过该层多次。将这个循环进行展开，等效于使用同一组参数的多个串联的卷积层，如下图所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/06%20DRCN.png" alt="DRCN"></p>
-<p>其中的 $H_{l}$ 到 $H_{D}$ 是D个共享参数的卷积层。将这D个卷积层的每一层的结果都通过相同的Reconstruction Net，在Reconstruction Net中与输入的图像相加，得到D个输出重建结果。这些所有的结果在训练时都同时被监督，即所有的递归都被监督，作者称之为递归监督(Recursive-Supervision)，避免了梯度消失/爆炸问题。将D个递归得到的结果再加权平均：</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/26%20DRCN.png" alt="DRCN"></p>
-<p>得到一个总输出。每个加权 $w_{d}$ 在训练的过程中也不断地更新。最终的目标函数就需要优化每一个递归层输出的误差和总输出的误差：</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/08%20DRCN.png" alt="DRCN"><br><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/09%20DRCN.png" alt="DRCN"><br><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/10%20DRCN.png" alt="DRCN"></p>
-<p>$\beta$ 表示的是权值衰减(weight decay)。$\alpha$ 的初始值设置得比较高以使得训练过程稳定，因为训练开始的阶段递归更容易收敛。随着训练的进行，$\alpha$ 逐渐衰减来提升最终输出的性能。</p>
-<p>code: <a href="https://cv.snu.ac.kr/research/DRCN/" target="_blank" rel="noopener">https://cv.snu.ac.kr/research/DRCN/</a><br>githug(tensorflow): <a href="https://github.com/jiny2001/deeply-recursive-cnn-tf" target="_blank" rel="noopener">https://github.com/jiny2001/deeply-recursive-cnn-tf</a></p>
-<p><strong>6. RED</strong><br>(<a href="https://arxiv.org/abs/1606.08921" target="_blank" rel="noopener">Image Restoration Using Convolutional Auto-encoders with Symmetric Skip Connections</a>, NIPS2016)</p>
-<p>这篇文章提出了由对称的卷积层-反卷积层构成的网络结构，作为一个编码-解码框架，可以学习由低质图像到原始图像端到端的映射。网络结构如下图所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/24%20RED.png" alt="RED"></p>
-<p>RED网络的结构是对称的，每个卷积层都有对应的反卷积层。卷积层用来获取图像的抽象内容，反卷积层用来放大特征尺寸并且恢复图像细节。卷积层将输入图像尺寸减小后，再通过反卷积层上采样变大，使得输入输出的尺寸一样。每一组镜像对应的卷积层和反卷积层有着跳线连接结构，将两部分具有同样尺寸的特征(要输入卷积层的特征和对应的反卷积层输出的特征)做相加操作(ResNet那样的操作)后再输入到下一个反卷积层，操作过程如下图所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/25%20RED.png" alt="RED"></p>
-<p>这样的结构能够让反向传播信号能够直接传递到底层，解决了梯度消失问题，同时能将卷积层的细节传递给反卷积层，能够恢复出更干净的图片。可以看到，网络中有一条线是将输入的图像连接到后面与最后的一层反卷积层的输出相加，也就是VDSR中用到的方式，因此RED中间的卷积层和反卷积层学习的特征是目标图像和低质图像之间的残差。RED的网络深度为30层，损失函数用的均方误差。</p>
-<p><strong>7. DRRN</strong><br>(<a href="http://openaccess.thecvf.com/content_cvpr_2017/papers/Tai_Image_Super-Resolution_via_CVPR_2017_paper.pdf" target="_blank" rel="noopener">Image Super-Resolution via Deep Recursive Residual Network</a>, CVPR2017)</p>
-<p>DRRN的作者应该是受到了ResNet、VDSR和DRCN的启发，采用了更深的网络结构来获取性能的提升。作者也在文中用图片示例比较了DRRN与上述三个网络的区别，比较示例图如下所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/11%20DRRN.png" alt="DRRN"></p>
-<p>DRRN中的每个残差单元都共同拥有一个相同的输入，即递归块中的第一个卷积层的输出。每个残差单元都包含2个卷积层。在一个递归块内，每个残差单元内对应位置相同的卷积层参数都共享(图中DRRN的浅绿色块或浅红色块)。作者列出了ResNet、VDSR、DRCN和DRRN四者的主要策略。ResNet是链模式的局部残差学习。VDSR是全局残差学习。DRCN是全局残差学习+单权重的递归学习+多目标优化。DRRN是多路径模式的局部残差学习+全局残差学习+多权重的递归学习。</p>
-<p>文章中比较了不同的递归块和残差单元数量的实验结果，最终选用的是1个递归块和25个残差单元，深度为52层的网络结构。总之，DRRN就是通过对之前已有的ResNet等结构进行调整，采取更深的网络结构得到结果的提升。</p>
-<p>github(caffe): <a href="https://github.com/tyshiwo/DRRN_CVPR17" target="_blank" rel="noopener">https://github.com/tyshiwo/DRRN_CVPR17</a></p>
-<p><strong>8. LapSRN</strong><br>(<a href="https://arxiv.org/abs/1704.03915" target="_blank" rel="noopener">Deep Laplacian Pyramid Networks for Fast and Accurate Super-Resolution</a>, CVPR2017)</p>
-<p>论文中作者先总结了之前的方法存在有三点问题。一是有的方法在输入图像进网络前，需要使用预先定义好的上采样操作(例如bicubic)来获得目标的空间尺寸，这样的操作增加了额外的计算开销，同时也会导致可见的重建伪影。而有的方法使用了亚像素卷积层或者反卷积层这样的操作来替换预先定义好的上采样操作，这些方法的网络结构又相对比较简单，性能较差，并不能学好低分辨率图像到高分辨率图像复杂的映射。二是在训练网络时使用 $l_{2} $型损失函数时，不可避免地会产生模糊的预测，恢复出的高分辨率图片往往会太过于平滑。三是在重建高分辨率图像时，如果只用一次上采样的操作，在获得大倍数(8倍以上)的上采样因子时就会比较困难。而且在不同的应用时，需要训练不同上采样倍数的模型。针对这三点问题，作者提出了LapSRN，网络结构如下图所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/12%20LapSRN.png" alt="LapSRN"></p>
-<p>LapSRN的结构可以看成有多级，每一级完成一次2倍的上采样操作，要实现8倍的上采样就需要有三级。在每一级中，先通过一些级联的卷积层提取特征，接着通过一个反卷积层将提取出的特征的尺寸上采样2倍。反卷积层后连有两个卷积层，一个卷积层的作用是继续提取特征，另外一个卷积层的作用是预测出这一级的残差。输入图像在每一级也经过一个反卷积层使尺寸上采样2倍，再与对应级的残差相加，就能重构出这一级的上采样结果。LapSRN设计损失函数为：</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/13%20LapSRN.png" alt="LapSRN"></p>
-<p>其中，<img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/14%20LapSRN.png" alt="LapSRN">叫作Charbonnier惩罚函数( $l_{1} $范数的变形)， $\varepsilon $大小设置为0.001。x表示低分辨率图像，y表示高分辨率图像，r表示残差，s表示对应的级。N表示训练时batch size的大小，L表示网络一共有多少级。通过将高分辨率图下采样，在每一级都存在有对应的ground truth进行监督，因此每一级都有一个损失，训练的时候就是要把每一级的损失的和降低。</p>
-<p>LapSRN通过逐步上采样，一级一级预测残差的方式，在做高倍上采样时，也能得到中间低倍上采样结果的输出。由于尺寸是逐步放大，不是所有的操作都在大尺寸特征上进行，因此速度比较快。LapSRN设计了损失函数来训练网络，对每一级的结果都进行监督，因此取得了不错的结果。</p>
-<p>github(matconvnet): <a href="https://github.com/phoenix104104/LapSRN" target="_blank" rel="noopener">https://github.com/phoenix104104/LapSRN</a><br>github(pytorch): <a href="https://github.com/twtygqyy/pytorch-LapSRN" target="_blank" rel="noopener">https://github.com/twtygqyy/pytorch-LapSRN</a><br>github(tensorflow): <a href="https://github.com/zjuela/LapSRN-tensorflow" target="_blank" rel="noopener">https://github.com/zjuela/LapSRN-tensorflow</a></p>
-<p><strong>9. SRDenseNet</strong><br>(<a href="http://openaccess.thecvf.com/content_ICCV_2017/papers/Tong_Image_Super-Resolution_Using_ICCV_2017_paper.pdf" target="_blank" rel="noopener">Image Super-Resolution Using Dense Skip Connections</a>, ICCV2017)</p>
-<p>DenseNet是CVPR2017的best papaer获奖论文。DenseNet在稠密块(dense block)中将每一层的特征都输入给之后的所有层，使所有层的特征都串联(concatenate)起来，而不是像ResNet那样直接相加。这样的结构给整个网络带来了减轻梯度消失问题、加强特征传播、支持特征复用、减少参数数量的优点。一个稠密块的结构如下图所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/15%20SRDenseNet.png" alt="dense block"></p>
-<p>SRDenseNet将稠密块结构应用到了超分辨率问题上，取得了不错的效果。网络结构如下图所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/16%20SRDenseNet.png" alt="SRDenseNet"></p>
-<p>SRDenseNet可以分成四个部分。首先是用一个卷积层学习低层的特征，接着用多个稠密块学习高层的特征，然后通过几个反卷积层学到上采样滤波器参数，最后通过一个卷积层生成高分辨率输出。</p>
-<p>文章中针对用于最后重建的输入内容不同，设计了三种结构并做了比较。一是反卷积层只输入最顶层稠密块的输出。二是添加了一个跳跃连接，将最底层卷积层的输出特征和最顶层稠密块的输出特征串联起来，再输入反卷积层。三是添加了稠密跳跃连接，就是把稠密块看成一个整体，第一个卷积层的输出以及每个稠密块的输出，都输入给在之后的所有稠密块，像是把在反卷积层之前的整个网络也设计成像稠密块那样的结构。由于这样做，所有的特征都串联起来，这样直接输入反卷积层会产生巨大的计算开销，因此添加了一个核大小为1×1的卷积层来减小特征数量，这个卷积层被称为瓶颈层。最后的结果是越复杂的越好，3&gt;2&gt;1。文章中分析的是，受益于低层特征和高层特征的结合，超分辨率重建的性能得到了提升。像第三种结构把所有深度层的特征都串联起来，得到了最佳的结果，说明不同深度层的特征之间包含的信息是互补的。</p>
-<p><strong>10. SRGAN(SRResNet)</strong><br>(<a href="https://arxiv.org/abs/1609.04802" target="_blank" rel="noopener">Photo-Realistic Single Image Super-Resolution Using a Generative Adversarial Network</a>, CVPR2017)</p>
-<p>在这篇文章中，将生成对抗网络(Generative Adversarial Network, GAN)用在了解决超分辨率问题上。文章提到，训练网络时用均方差作为损失函数，虽然能够获得很高的峰值信噪比，但是恢复出来的图像通常会丢失高频细节，使人不能有好的视觉感受。SRGAN利用感知损失(perceptual loss)和对抗损失(adversarial loss)来提升恢复出的图片的真实感。感知损失是利用卷积神经网络提取出的特征，通过比较生成图片经过卷积神经网络后的特征和目标图片经过卷积神经网络后的特征的差别，使生成图片和目标图片在语义和风格上更相似。一个GAN所要完成的工作，GAN原文举了个例子：生成网络(G)是印假钞的人，判别网络(D)是检测假钞的人。G的工作是让自己印出来的假钞尽量能骗过D，D则要尽可能的分辨自己拿到的钞票是银行中的真票票还是G印出来的假票票。开始的时候呢，G技术不过关，D能指出这个假钞哪里很假。G每次失败之后都认真总结经验，努力提升自己，每次都进步。直到最后，D无法判断钞票的真假……SRGAN的工作就是： G网通过低分辨率的图像生成高分辨率图像，由D网判断拿到的图像是由G网生成的，还是数据库中的原图像。当G网能成功骗过D网的时候，那我们就可以通过这个GAN完成超分辨率了。</p>
-<p>文章中，用均方误差优化SRResNet(SRGAN的生成网络部分)，能够得到具有很高的峰值信噪比的结果。在训练好的VGG模型的高层特征上计算感知损失来优化SRGAN，并结合SRGAN的判别网络，能够得到峰值信噪比虽然不是最高，但是具有逼真视觉效果的结果。SRGAN网络结构如下图所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/17%20SRGAN.png" alt="SRGAN"></p>
-<p>在生成网络部分(SRResNet)部分包含多个残差块，每个残差块中包含两个3×3的卷积层，卷积层后接批规范化层(batch normalization, BN)和PReLU作为激活函数，两个2×亚像素卷积层(sub-pixel convolution layers)被用来增大特征尺寸。在判别网络部分包含8个卷积层，随着网络层数加深，特征个数不断增加，特征尺寸不断减小，选取激活函数为LeakyReLU，最终通过两个全连接层和最终的sigmoid激活函数得到预测为自然图像的概率。SRGAN的损失函数为：</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/18%20SRGAN.png" alt="SRGAN"></p>
-<p>其中内容损失可以是基于均方误差的损失的损失函数：</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/19%20SRGAN.png" alt="SRGAN"></p>
-<p>也可以是基于训练好的以ReLU为激活函数的VGG模型的损失函数:</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/20%20SRGAN.png" alt="SRGAN"></p>
-<p>i和j表示VGG19网络中第i个最大池化层(maxpooling)后的第j个卷积层得到的特征。对抗损失为：</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/21%20SRGAN.png" alt="SRGAN"></p>
-<p>文章中的实验结果表明，用基于均方误差的损失函数训练的SRResNet，得到了结果具有很高的峰值信噪比，但是会丢失一些高频部分细节，图像比较平滑。而SRGAN得到的结果则有更好的视觉效果。其中，又对内容损失分别设置成基于均方误差、基于VGG模型低层特征和基于VGG模型高层特征三种情况作了比较，在基于均方误差的时候表现最差，基于VGG模型高层特征比基于VGG模型低层特征的内容损失能生成更好的纹理细节。</p>
-<p>github(tensorflow): <a href="https://github.com/zsdonghao/SRGAN" target="_blank" rel="noopener">https://github.com/zsdonghao/SRGAN</a><br>github(tensorflow): <a href="https://github.com/buriburisuri/SRGAN" target="_blank" rel="noopener">https://github.com/buriburisuri/SRGAN</a><br>github(torch): <a href="https://github.com/junhocho/SRGAN" target="_blank" rel="noopener">https://github.com/junhocho/SRGAN</a><br>github(caffe): <a href="https://github.com/ShenghaiRong/caffe_srgan" target="_blank" rel="noopener">https://github.com/ShenghaiRong/caffe_srgan</a><br>github(tensorflow): <a href="https://github.com/brade31919/SRGAN-tensorflow" target="_blank" rel="noopener">https://github.com/brade31919/SRGAN-tensorflow</a><br>github(keras): <a href="https://github.com/titu1994/Super-Resolution-using-Generative-Adversarial-Networks" target="_blank" rel="noopener">https://github.com/titu1994/Super-Resolution-using-Generative-Adversarial-Networks</a><br>github(pytorch): <a href="https://github.com/ai-tor/PyTorch-SRGAN" target="_blank" rel="noopener">https://github.com/ai-tor/PyTorch-SRGAN</a></p>
-<p><strong>11. EDSR</strong><br>(<a href="https://arxiv.org/abs/1707.02921" target="_blank" rel="noopener">Enhanced Deep Residual Networks for Single Image Super-Resolution</a>, CVPRW2017)</p>
-<p>EDSR是NTIRE2017超分辨率挑战赛上获得冠军的方案。如论文中所说，EDSR最有意义的模型性能提升是去除掉了SRResNet多余的模块，从而可以扩大模型的尺寸来提升结果质量。EDSR的网络结构如下图所示。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/22%20EDSR.png" alt="EDSR"></p>
-<p>可以看到，EDSR在结构上与SRResNet相比，就是把批规范化处理(batch normalization, BN)操作给去掉了。文章中说，原始的ResNet最一开始是被提出来解决高层的计算机视觉问题，比如分类和检测，直接把ResNet的结构应用到像超分辨率这样的低层计算机视觉问题，显然不是最优的。由于批规范化层消耗了与它前面的卷积层相同大小的内存，在去掉这一步操作后，相同的计算资源下，EDSR就可以堆叠更多的网络层或者使每层提取更多的特征，从而得到更好的性能表现。EDSR用L1范数样式的损失函数来优化网络模型。在训练时先训练低倍数的上采样模型，接着用训练低倍数上采样模型得到的参数来初始化高倍数的上采样模型，这样能减少高倍数上采样模型的训练时间，同时训练结果也更好。</p>
-<p>这篇文章还提出了一个能同时不同上采样倍数的网络结构MDSR，如下图。</p>
-<p><img src="https://raw.githubusercontent.com/aBlueMouse/MarkdownPhotos/master/SRCNN%20to%20EDSR/23%20EDSR.png" alt="MDSR"></p>
-<p>MDSR的中间部分还是和EDSR一样，只是在网络前面添加了不同的预训练好的模型来减少不同倍数的输入图片的差异。在网络最后，不同倍数上采样的结构平行排列来获得不同倍数的输出结果。</p>
-<p>从文章给出的结果可以看到，EDSR能够得到很好的结果。增大模型参数数量以后，结果又有了进一步的提升。因此如果能够解决训练困难的问题，网络越深，参数越多，对提升结果确实是有帮助吧。</p>
-<p>github(torch): <a href="https://github.com/LimBee/NTIRE2017" target="_blank" rel="noopener">https://github.com/LimBee/NTIRE2017</a><br>github(tensorflow): <a href="https://github.com/jmiller656/EDSR-Tensorflow" target="_blank" rel="noopener">https://github.com/jmiller656/EDSR-Tensorflow</a><br>github(pytorch): <a href="https://github.com/thstkdgus35/EDSR-PyTorch" target="_blank" rel="noopener">https://github.com/thstkdgus35/EDSR-PyTorch</a></p>
-<p>通过以上11篇有关深度学习超分辨率方法的论文，可以看到通过网络结构、损失函数以及训练方式的演变，深度学习超分辨率方法在结果、速度以及应用性上都有了不断的提高。这里再放上一篇深度学习超分辨率方法综述的链接(<a href="https://arxiv.org/abs/1706.09077" target="_blank" rel="noopener">Super-Resolution via Deep Learning</a>)以及github上一个超分辨率方法的总结(<a href="https://github.com/YapengTian/Single-Image-Super-Resolution" target="_blank" rel="noopener">https://github.com/YapengTian/Single-Image-Super-Resolution</a>)。</p>
-
-          
+          超分辨率技术（Super-Resolution, SR）是指从观测到的低分辨率图像重建出相应的高分辨率图像，在监控设备、卫星图像和医学影像等领域都有重要的应用价值。
+本文针对端到端的基于深度学习的单张图像超分辨率方法(Single Image Super-Resolution, SISR)，总结一下
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2017/12/16/从SRCNN到EDSR，总结深度学习端到端超分辨率方法发展历程/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
